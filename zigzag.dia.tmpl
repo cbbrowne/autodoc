@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dia:diagram xmlns:dia="http://www.lysator.liu.se/~alla/dia/">
+  <dia:layer name="Background" visible="true">
+<!-- TMPL_LOOP name="schemas" -->
+<!-- TMPL_IF name="number_of_schemas" -->
+    <dia:group>
+<!-- /TMPL_IF name="number_of_schemas" -->
+<!-- TMPL_LOOP name="tables" -->
+    <dia:object type="UML - Class" version="0" id="O<!-- TMPL_VAR ESCAPE="HTML" name="object_id" -->">
+      <dia:attribute name="name">
+        <dia:string>#<!-- TMPL_VAR ESCAPE="HTML" name="table" -->#</dia:string>
+      </dia:attribute>
+<!-- TMPL_IF name="number_of_schemas" -->
+      <dia:attribute name="stereotype">
+        <dia:string>#<!-- TMPL_VAR ESCAPE="HTML" name="schema" -->#</dia:string>
+      </dia:attribute>
+<!-- /TMPL_IF name="number_of_schemas" -->
+      <dia:attribute name="abstract">
+        <dia:boolean val="false"/>
+      </dia:attribute>
+      <dia:attribute name="suppress_attributes">
+        <dia:boolean val="false"/>
+      </dia:attribute>
+      <dia:attribute name="suppress_operations">
+        <dia:boolean val="false"/>
+      </dia:attribute>
+      <dia:attribute name="visible_attributes">
+        <dia:boolean val="true"/>
+      </dia:attribute>
+      <dia:attribute name="attributes">
+<!-- TMPL_LOOP name="columns" -->
+        <dia:composite type="umlattribute">
+          <dia:attribute name="name">
+            <dia:string>#<!-- TMPL_IF name="column_primary_key" -->PK<!-- TMPL_ELSE name="column_primary_key" -->  <!-- /TMPL_IF name="column_primary_key" --><!-- TMPL_VAR ESCAPE="HTML" name="column" -->#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="type">
+            <dia:string>#<!-- TMPL_VAR ESCAPE="HTML" name="column_type" -->#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="value">
+<!-- TMPL_IF name="column_default_short" -->
+            <dia:string>#<!-- TMPL_VAR ESCAPE="HTML" name="column_default_short" -->#</dia:string>
+<!-- TMPL_ELSE name="column_default_short" -->
+            <dia:string/>
+<!-- /TMPL_IF name="column_default_short" -->
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+        </dia:composite>
+<!-- /TMPL_LOOP name="columns" -->
+      </dia:attribute>
+<!-- TMPL_IF name="constraints" -->
+      <dia:attribute name="visible_operations">
+        <dia:boolean val="true"/>
+      </dia:attribute>
+      <dia:attribute name="operations">
+<!-- TMPL_LOOP name="constraints" -->
+        <dia:composite type="umloperation">
+          <dia:attribute name="name">
+            <dia:string>#<!-- TMPL_VAR ESCAPE="HTML" name="constraint_name" -->#</dia:string>
+          </dia:attribute>
+          <dia:attribute name="visibility">
+            <dia:enum val="3"/>
+          </dia:attribute>
+          <dia:attribute name="abstract">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="class_scope">
+            <dia:boolean val="false"/>
+          </dia:attribute>
+          <dia:attribute name="parameters">
+            <dia:composite type="umlparameter">
+              <dia:attribute name="name">
+                <dia:string>#<!-- TMPL_VAR ESCAPE="HTML" name="constraint_short" -->#</dia:string>
+              </dia:attribute>
+              <dia:attribute name="type">
+                <dia:string>##</dia:string>
+              </dia:attribute>
+              <dia:attribute name="value">
+                <dia:string/>
+              </dia:attribute>
+              <dia:attribute name="kind">
+                <dia:enum val="0"/>
+              </dia:attribute>
+            </dia:composite>
+          </dia:attribute>
+        </dia:composite>
+<!-- /TMPL_LOOP name="constraints" -->
+      </dia:attribute>
+<!-- TMPL_ELSE name="constraints" -->
+      <dia:attribute name="visible_operations">
+        <dia:boolean val="false"/>
+      </dia:attribute>
+      <dia:attribute name="operations"/>
+<!-- /TMPL_IF name="constraints" -->
+      <dia:attribute name="template">
+        <dia:boolean val="false"/>
+      </dia:attribute>
+      <dia:attribute name="templates"/>
+    </dia:object>
+<!-- /TMPL_LOOP name="tables" -->
+<!-- TMPL_IF name="number_of_schemas" -->
+    </dia:group>
+<!-- /TMPL_IF name="number_of_schemas" -->
+<!-- /TMPL_LOOP name="schemas" -->
+<!-- TMPL_LOOP name="fk_links" -->
+    <dia:object type="UML - Dependency" version="0" id="O<!-- TMPL_VAR ESCAPE="HTML" name="object_id" -->">
+      <dia:attribute name="obj_pos">
+        <dia:point val="0.0,0.0"/>
+      </dia:attribute>
+       <dia:attribute name="obj_bb">
+        <dia:rectangle val="0.0,0.0;0.0,0.0"/>
+      </dia:attribute>
+      <dia:attribute name="orth_points">
+        <dia:point val="0.0,0.0"/>
+        <dia:point val="0.0,0.0"/>
+        <dia:point val="0.0,0.0"/>
+        <dia:point val="0.0,0.0"/>
+      </dia:attribute>
+      <dia:attribute name="orth_orient">
+        <dia:enum val="0"/>
+        <dia:enum val="0"/>
+        <dia:enum val="0"/>
+      </dia:attribute>
+      <dia:attribute name="orth_autoroute">
+        <dia:boolean val="true"/>
+      </dia:attribute>
+      <dia:attribute name="name">
+        <dia:string>#<!-- TMPL_VAR ESCAPE="HTML" name="fk_link_name" -->#</dia:string>
+      </dia:attribute>
+      <dia:attribute name="stereotype">
+        <dia:string>##</dia:string>
+      </dia:attribute>
+      <dia:attribute name="draw_arrow">
+        <dia:boolean val="true"/>
+      </dia:attribute>
+      <dia:connections>
+        <dia:connection handle="0" to="O<!-- TMPL_VAR ESCAPE="HTML" name="handle0_to" -->" connection="<!-- TMPL_VAR ESCAPE="HTML" name="handle0_connection_dia" -->"/>
+        <dia:connection handle="1" to="O<!-- TMPL_VAR ESCAPE="HTML" name="handle1_to" -->" connection="<!-- TMPL_VAR ESCAPE="HTML" name="handle1_connection_dia" -->"/>
+      </dia:connections>
+    </dia:object>
+<!-- /TMPL_LOOP name="fk_links" -->
+  </dia:layer>
+</dia:diagram>

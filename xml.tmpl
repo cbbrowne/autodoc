@@ -1,0 +1,203 @@
+<!-- $Header: /cvsroot/autodoc/autodoc/xml.tmpl,v 1.1 2004/05/12 16:00:37 rbt Exp $ -->
+
+<book id="database.<!-- TMPL_VAR name="database_sgmlid" -->" xreflabel="<!-- TMPL_VAR name="database_dbk" --> database schema"><title><!-- TMPL_VAR name="database_dbk" --> Model</title>
+
+<!-- TMPL_IF name="database_comment" -->
+<!-- TMPL_VAR name="database_comment_dbk" -->
+<!-- /TMPL_IF name="database_comment" -->
+
+<!-- TMPL_LOOP name="schemas" -->
+  <chapter id="<!-- TMPL_VAR name="schema_sgmlid" -->"
+           xreflabel="<!-- TMPL_VAR name="schema_dbk" -->">
+    <title>Schema <!-- TMPL_VAR name="schema_dbk" --></title>
+    <para><!-- TMPL_VAR name="schema_comment_dbk" --></para>
+
+<!-- TMPL_LOOP name="tables" -->
+      <section id="<!-- TMPL_VAR name="table_sgmlid" -->"
+               xreflabel="<!-- TMPL_VAR name="schema_dbk" -->.<!-- TMPL_VAR name="table_dbk" -->">
+        <title id="<!-- TMPL_VAR name="table_sgmlid" -->-title">
+         <!-- TMPL_IF name="view_definition" -->View:
+         <!-- TMPL_ELSE -->Table:
+         <!-- /TMPL_IF name="view_definition" -->
+         <structname><!-- TMPL_VAR name="table_dbk" --></structname>
+        </title>
+ 
+<!-- TMPL_IF name="table_comment" -->
+        <para>
+          <!-- TMPL_VAR name="table_comment_dbk" -->
+        </para>
+<!-- /TMPL_IF name="table_comment" -->
+
+        <para>
+          <variablelist>
+            <title>
+              Structure of <structname><!-- TMPL_VAR name="table_dbk" --></structname>
+            </title>
+
+<!-- TMPL_LOOP name="columns" -->
+            <varlistentry>
+              <term><structfield><!-- TMPL_VAR name="column_dbk" --></structfield></term>
+              <listitem><para>
+                <type><!-- TMPL_VAR name="column_type_dbk" --></type>
+<!-- TMPL_LOOP name="column_constraints" -->
+<!-- TMPL_IF name="column_primary_key" -->
+                <literal>PRIMARY KEY</literal>
+
+<!-- /TMPL_IF name="column_primary_key" -->
+
+<!-- TMPL_IF name="column_unique" -->
+                      <literal>UNIQUE<!-- TMPL_IF name="column_unique_keygroup" -->#<!-- TMPL_VAR name="column_unique_keygroup" --><!-- /TMPL_IF name="column_unique_keygroup" --></literal>
+<!-- /TMPL_IF name="column_unique" -->
+<!-- /TMPL_LOOP name="column_constraints" -->
+
+<!-- TMPL_IF name="column_constraint_notnull" -->
+                <literal>NOT NULL</literal>
+<!-- /TMPL_IF name="column_constraint_notnull" -->
+
+<!-- TMPL_IF name="column_default" -->
+                <literal>DEFAULT <!-- TMPL_VAR name="column_default_dbk" --></literal>
+<!-- /TMPL_IF name="column_default" -->
+
+<!-- TMPL_LOOP name="column_constraints" -->
+<!-- TMPL_IF name="column_fk" -->
+                <literal>REFERENCES</literal> <xref linkend="<!-- TMPL_VAR name="column_fk_sgmlid" -->"/>
+<!-- /TMPL_IF name="column_fk" -->
+<!-- /TMPL_LOOP name="column_constraints" -->
+              </para>
+<!-- TMPL_IF name="column_comment" -->
+              <para>
+                <!-- TMPL_VAR name="column_comment_dbk" -->
+              </para>
+<!-- /TMPL_IF name="column_comment" -->
+            </listitem>
+          </varlistentry>
+<!-- /TMPL_LOOP name="columns" -->
+        </variablelist>
+
+<!-- TMPL_LOOP name="constraints" -->
+<!-- TMPL_IF name="__FIRST__" -->
+        <variablelist>
+          <title>Constraints on <!-- TMPL_VAR name="table_dbk" --></title>
+<!-- /TMPL_IF name="__FIRST__" -->
+          <varlistentry>
+            <term><!-- TMPL_VAR name="constraint_name_dbk" --></term>
+            <listitem><para><!-- TMPL_VAR name="constraint_dbk" --></para></listitem>
+          </varlistentry>
+<!-- TMPL_IF name="__LAST__" -->
+        </variablelist>
+<!-- /TMPL_IF name="__LAST__" -->
+<!-- /TMPL_LOOP name="constraints" -->
+
+<!-- TMPL_LOOP name="indexes" -->
+<!-- TMPL_IF name="__FIRST__" -->
+        <variablelist>
+          <title>Indexes on <!-- TMPL_VAR name="table_dbk" --></title>
+<!-- /TMPL_IF name="__FIRST__" -->
+          <varlistentry>
+            <term><!-- TMPL_VAR name="index_name_dbk" --></term>
+            <listitem><para><!-- TMPL_VAR name="index_definition_dbk" --></para></listitem>
+          </varlistentry>
+<!-- TMPL_IF name="__LAST__" -->
+        </variablelist>
+<!-- /TMPL_IF name="__LAST__" -->
+<!-- /TMPL_LOOP name="indexes" -->
+
+<!-- TMPL_LOOP name="fk_schemas" -->
+<!-- TMPL_IF name="__FIRST__" -->
+        <itemizedlist>
+          <title>
+            Tables referencing <!-- TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="fk_schema_dbk" -->.<!-- /TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="fk_table_dbk" --> via Foreign Key Constraints
+          </title>
+<!-- /TMPL_IF name="__FIRST__" -->
+          <listitem>
+            <para>
+              <xref linkend="<!-- TMPL_VAR name="fk_sgmlid" -->"/>
+            </para>
+          </listitem>
+<!-- TMPL_IF name="__LAST__" -->
+        </itemizedlist>
+<!-- /TMPL_IF name="__LAST__" -->
+<!-- /TMPL_LOOP name="fk_schemas" -->
+
+<!-- TMPL_IF name="view_definition" -->
+        <figure>
+         <title>Definition of view <!-- TMPL_VAR name="table_dbk" --></title>
+         <programlisting><!-- TMPL_VAR name="view_definition_dbk" --></programlisting>
+        </figure>
+<!-- /TMPL_IF name="view_definition" -->
+<!-- TMPL_LOOP name="permissions" -->
+<!-- TMPL_IF name="__FIRST__" -->
+        <variablelist>
+          <title>Permissions on <!-- TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="schema" -->.<!-- /TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR name="table_dbk" --></title>
+<!-- /TMPL_IF name="__FIRST__" -->
+          <varlistentry>
+            <term><!-- TMPL_VAR name="user_dbk" --></term>
+            <listitem>
+              <para>
+                <simplelist type="inline">
+<!-- TMPL_IF name="select" -->
+                  <member>Select</member>
+<!-- /TMPL_IF name="select" -->
+<!-- TMPL_IF name="insert" -->
+                  <member>Insert</member>
+<!-- /TMPL_IF name="insert" -->
+<!-- TMPL_IF name="update" -->
+                  <member>Update</member>
+<!-- /TMPL_IF name="update" -->
+<!-- TMPL_IF name="delete" -->
+                  <member>Delete</member>
+<!-- /TMPL_IF name="delete" -->
+<!-- TMPL_IF name="rule" -->
+                  <member>Rule</member>
+<!-- /TMPL_IF name="rule" -->
+<!-- TMPL_IF name="references" -->
+                  <member>References</member>
+<!-- /TMPL_IF name="references" -->
+<!-- TMPL_IF name="trigger" -->
+                  <member>Trigger</member>
+<!-- /TMPL_IF name="trigger" -->
+                </simplelist>
+              </para>
+            </listitem>
+          </varlistentry>
+<!-- TMPL_IF name="__LAST__" -->
+        </variablelist>
+<!-- /TMPL_IF name="__LAST__" -->
+<!-- /TMPL_LOOP name="permissions" -->
+
+      </para>
+    </section>
+<!-- /TMPL_LOOP name="tables" -->
+
+<!-- TMPL_LOOP name="functions" -->
+<!-- Function <!-- TMPL_VAR NAME="function" --> -->
+    <section id="<!-- TMPL_VAR NAME="function_sgmlid" -->"
+             xreflabel="<!-- TMPL_VAR NAME="schema_dbk" --><!-- TMPL_VAR NAME="function_dbk"-->">
+      <title id="<!-- TMPL_VAR NAME="function_sgmlid" -->-title">
+       <!-- TMPL_VAR name="function_dbk" -->
+      </title>
+      <titleabbrev id="<!-- TMPL_VAR NAME="function_sgmlid" -->-titleabbrev">
+       <!-- TMPL_VAR name="function_dbk" -->
+      </titleabbrev>
+
+      <para>
+       <segmentedlist>
+        <title>Function Properties</title>
+        <?dbhtml list-presentation="list"?>
+        <segtitle>Language</segtitle>
+        <segtitle>Return Type</segtitle>
+        <seglistitem>
+         <seg><!-- TMPL_VAR ESCAPE="HTML" name="function_language" --></seg>
+         <seg><!-- TMPL_VAR ESCAPE="HTML" name="function_returns" --></seg>
+        </seglistitem>
+       </segmentedlist>
+ 
+       <!-- TMPL_VAR name="function_comment_dbk" -->
+        <programlisting><!-- TMPL_IF name="function_source" --><!-- TMPL_VAR ESCAPE="HTML" name="function_source" --><!-- /TMPL_IF name="function_source" --></programlisting>
+      </para>
+    </section>
+<!-- /TMPL_LOOP name="functions" -->
+  </chapter>
+<!-- /TMPL_LOOP name="schemas" -->
+</book>
+

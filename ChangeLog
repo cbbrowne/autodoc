@@ -1,0 +1,1065 @@
+2004-02-15 08:30  rtaylor02
+
+	* dot.tmpl, postgresql_autodoc.pl: Escape the variables for .dot
+	  files which may include quotes.
+
+2004-02-14 15:37  rtaylor02
+
+	* postgresql_autodoc.pl: Last commit (bug fix) reported by
+
+	  Adrian Head Bytecomm P/L
+
+2004-02-14 15:29  rtaylor02
+
+	* postgresql_autodoc.pl: Remove quote_ident() calls that caused
+	  postgresql keywords to be quoted. These were quite ugly and
+	  actually broke the .dot output.
+
+2003-12-07 16:09  rtaylor02
+
+	* Makefile, zigzag.dia.tmpl: New template for dia
+
+	  In databases with many tables and foreign keys dia diagram
+	  doesn't look very nice because uml-constraint is just a line (not
+	  zigzagline). Attached is a patch to dia.tmpl which uses
+	  dependancies instead of constraints. On the diagram they look in
+	  the same way, but it is possible to have more segments.It is
+	  tested on linux Suse 8.2, Postgresql 7.3.2, postgresql_autodoc
+	  1.20, Dia 0.90.
+
+	  Submitted by: Atanas Karashenski
+
+2003-12-02 09:11  rtaylor02
+
+	* postgresql_autodoc.pl: Fix permissions. They were picking up
+	  characters in the granting users name.
+
+2003-11-28 19:07  rtaylor02
+
+	* ChangeLog: 1.21 release
+
+2003-11-14 09:28  rtaylor02
+
+	* ChangeLog: Sorry, 1.21 release
+
+2003-11-14 09:28  rtaylor02
+
+	* ChangeLog: Update Changelog for 1.20 changes
+
+2003-11-13 21:58  rtaylor02
+
+	* postgresql_autodoc.pl: Correct a bug with Indexes query for
+	  databases we do not support indexes for (7.2 and prior).
+
+2003-11-07 21:15  rtaylor02
+
+	* configure: Goes with last commit..
+
+2003-11-07 21:14  rtaylor02
+
+	* configure.ac: Do perl module test using the form [ ! ( expression
+	  ) ] as the current test could fail on some versions of bash.
+
+	  Reported by: Chantal Ackermann
+
+2003-11-07 21:12  rtaylor02
+
+	* regressdatabase.sql: quantity_idx to become quantity_index for
+	  spellcheck reasons.
+
+2003-11-02 17:33  rtaylor02
+
+	* ChangeLog: Changelogs for 1.20
+
+2003-11-01 18:19  rtaylor02
+
+	* postgresql_autodoc.pl: Remove usage of upper() in favour of uc()
+
+2003-11-01 18:08  rtaylor02
+
+	* postgresql_autodoc.pl: Add the necessary ~ to upper (don't want
+	  character count, want a character exchange)
+
+	  Bump version number to 1.20
+
+2003-11-01 17:11  rtaylor02
+
+	* postgresql_autodoc.pl, xml.tmpl: Minor cleanups for spellchecker
+
+2003-10-28 17:58  rtaylor02
+
+	* regressdatabase.sql: Regress the index.
+
+2003-10-28 17:57  rtaylor02
+
+	* postgresql_autodoc.pl, xml.tmpl: Quick and dirty Index
+	  documentation for Docbook.
+
+2003-08-25 23:35  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Rearrange / format help
+
+	  Correct a number of hrefs within the template to use the prepared
+	  _sgmlid identifiers.
+
+2003-08-25 23:16  rtaylor02
+
+	* Makefile, html.tmpl, postgresql_autodoc.pl, xml.tmpl: Here's
+	  another patch. This has a small addition to the makefile to make
+	  the binary executable (useful in development). It also has code
+	  to get the function data and display it in the HTML template. You
+	  might think this needs more work. I have no knowledge of the dot
+	  and dia forms, and not very much knowledge of docbook, so I
+	  didn't do anything in those templates. Also, I have no knowledge
+	  of what is required for earlier versions of Postgres, so I left
+	  that alone.
+
+	  Andrew Dunstan
+
+	  Includes a correction of most HTML links, completes the above
+	  function elements (pre 7.3, docbook).
+
+	  Rod Taylor
+
+2003-08-18 09:30  rtaylor02
+
+	* xml.tmpl: Add View: and Table: prefixes much like HTML output.
+
+2003-08-18 09:24  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Here's a first patch with 3
+	  things: 1. "View" heading for views in HTML 2. option to specify
+	  template location (useful in development, for example) 3. option
+	  to specify what sort of output you want, instead of  getting them
+	  all.
+
+	  Andrew Dunstan
+
+2003-08-12 10:03  rtaylor02
+
+	* Makefile, postgresql_autodoc.pl: Ensure that a single tmpl file
+	  will be converted without an error.
+
+	  Change the make file to install a single template file at a time.
+
+2003-08-11 18:01  rtaylor02
+
+	* ChangeLog: Add release notes for 1.12 to ChangeLog
+
+2003-08-11 17:56  rtaylor02
+
+	* html.tmpl: Add a note about where the documentation originated
+	  from
+
+2003-08-11 17:52  rtaylor02
+
+	* postgresql_autodoc.pl: Bump version to 1.12
+
+2003-08-11 17:50  rtaylor02
+
+	* postgresql_autodoc.pl: Complain if the template files cannot be
+	  found.
+
+2003-08-11 17:47  rtaylor02
+
+	* html.tmpl: Formatting corrections for compliance.
+
+2003-08-11 17:46  rtaylor02
+
+	* regressdatabase.sql: Add a couple of small functions.
+
+2003-08-01 20:49  rtaylor02
+
+	* ChangeLog, Makefile: Commit notes for 1.11
+
+2003-08-01 20:48  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Rename various variables for
+	  consistency -- discovered while documenting.
+
+2003-07-27 20:54  rtaylor02
+
+	* postgresql_autodoc.pl: Remove docbook markup for plain numbers.
+
+2003-07-26 15:04  rtaylor02
+
+	* .cvsignore: Ignore ChangeLog.bak
+
+2003-07-26 15:03  rtaylor02
+
+	* ChangeLog: Introduction of the changelog.
+
+2003-07-26 15:03  rtaylor02
+
+	* sgml.tmpl: Not as useful as xml.tmpl
+
+2003-07-26 14:58  rtaylor02
+
+	* dot.tmpl, html.tmpl, postgresql_autodoc.pl, sgml.tmpl, xml.tmpl:
+	  Rename table_description to table_comment Skip views in GraphViz
+	  output Rename column_null to column_constraint_notnull Reorder
+	  column items to be alphabetical Rename column_description to
+	  column_comment Remove tables.type
+
+	  Clean whitespace
+
+2003-07-19 20:57  rtaylor02
+
+	* regressdatabase.sql: 2 field CHECK constraint and a simple view.
+
+2003-07-19 19:38  rtaylor02
+
+	* xml.tmpl: Copy of sgml.tmpl
+
+	  The SGML version is no longer going to be maintained (by me
+	  anyway), as the XML based version is much more useful.
+
+2003-07-18 20:10  rtaylor02
+
+	* .cvsignore: Ignore generated files.
+
+2003-07-18 20:09  rtaylor02
+
+	* regressdatabase.sql: A very simple regression database.
+
+2003-06-27 09:41  rtaylor02
+
+	* postgresql_autodoc.pl: Version bump
+
+2003-06-27 09:41  rtaylor02
+
+	* sgml.tmpl: Remove the schema prefix of the function title.
+
+2003-06-13 14:52  rtaylor02
+
+	* postgresql_autodoc.pl: Improve statistics message
+
+2003-06-13 14:44  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Clean up the statistics code to
+	  function as expected.
+
+2003-06-13 14:11  rtaylor02
+
+	* Makefile: Add distclean target, short for distribution-clean
+
+2003-05-31 13:46  rtaylor02
+
+	* postgresql_autodoc.pl: Reformat help using spaces rather than
+	  tabs.
+
+	  Inform the user on what to fix when --statistics is attempted on
+	  old DB versions.
+
+2003-05-31 00:03  rtaylor02
+
+	* dot.tmpl, postgresql_autodoc.pl: Fix inter-schema connections in
+	  the .dot output.
+
+2003-05-30 09:56  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Add back schema comments.
+
+2003-05-25 22:23  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Prototype most functions.
+
+	  Add triggerError function (prints error and exits)
+
+	  Change statistics to use pgstattuple in PostgreSQL 7.4 Add
+	  --statistics flag to enable them.
+
+2003-05-25 21:35  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: When creating the list of Fkeys
+	  referencing the current table, be sure to compare the schema,
+	  table and column, not just the table and column.
+
+	  Noticed By:	  Arthur Ward
+
+2003-05-21 12:21  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Rudementry stats.
+
+2003-05-20 13:57  rtaylor02
+
+	* postgresql_autodoc.pl, sgml.tmpl: Correct the schema prefix to
+	  function names.
+
+2003-05-20 13:34  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl, sgml.tmpl: Treat NOT NULL
+	  properly.
+
+	  It wasn't showing in the standard case -- but we still wanted to
+	  hide it in the primary key case.
+
+2003-05-20 11:40  rtaylor02
+
+	* sgml.tmpl: Re-shuffle statements.
+
+2003-05-20 11:30  rtaylor02
+
+	* sgml.tmpl: Ensure we test for foreign keys WITHIN the constraint
+	  loop!
+
+2003-05-14 16:17  rtaylor02
+
+	* postgresql_autodoc.pl: Ensure we escape $'s in queries that
+	  aren't a part of variables.
+
+	  Noticed By: Mike Stok
+
+2003-05-14 09:07  rtaylor02
+
+	* configure, configure.ac: Redirect PERL test output with 2>&1
+	  rather than >&.  For some reason this messed up non-cli based
+	  configures.
+
+2003-05-14 08:34  rtaylor02
+
+	* configure, configure.ac: Use ${PERL} rather than relying on the
+	  paths.
+
+2003-05-12 15:31  rtaylor02
+
+	* Makefile: Fix up release creation.
+
+	  Fix up installation (depends on all, create directories first)
+
+2003-05-12 14:58  rtaylor02
+
+	* Makefile: Include $(RELEASE_FILES) in the release target (doH!)
+
+2003-05-12 14:57  rtaylor02
+
+	* Makefile: Add a simple make target for release that ensure
+	  everything is all cleaned up and ready to go.
+
+2003-05-10 10:03  rtaylor02
+
+	* postgresql_autodoc.pl: Clean up comments, touch of formatting,
+	  and remove some unneeded (commented out) debug code.
+
+2003-05-10 00:04  rtaylor02
+
+	* postgresql_autodoc.pl: Ensure we don't pull out the constraint
+	  name if it has been auto-generated by postgresql.  The $N style
+	  naming doesn't have any useful information, per Arthur.
+
+	  UCASE() the various SQL keywords in queries, notably AS.
+
+2003-05-09 23:29  rtaylor02
+
+	* configure, configure.ac: Silence perls loud errors by redirecting
+	  the 'if' tests output to /dev/null
+
+2003-05-09 22:45  rtaylor02
+
+	* configure.ac: Bump comment on perl modules tested
+
+2003-05-09 22:44  rtaylor02
+
+	* configure, configure.ac: Add tests for perl modules
+
+2003-05-09 22:42  rtaylor02
+
+	* postgresql_autodoc.pl: Comment out the Data::Dumper file.  It's
+	  unneeded.
+
+2003-05-09 20:50  rtaylor02
+
+	* Makefile: Don't be so secretive.
+
+2003-05-09 20:49  rtaylor02
+
+	* Makefile: Add distribution-clean, which should be good enough to
+	  setup tarball.
+
+	  The difference between it and maintainer-clean, is that
+	  distribution-clean will leave the configure file.
+
+2003-05-09 20:41  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Add the column name to the
+	  foreign key link.
+
+	  Ignore the plpgsql_call_handler() function in >= Pg73
+
+	  Ensure we show schemas (set number_of_schemas variable) for
+	  column constraints.
+
+2003-05-09 20:39  rtaylor02
+
+	* sgml.tmpl: Correct spelling of REFERENCS
+
+	  Add a . between schema and table names in the section xreflabel
+
+2003-05-09 16:00  rtaylor02
+
+	* Makefile: Install with privileges
+
+2003-05-09 16:00  rtaylor02
+
+	* configure: Minor changes to header notes
+
+2003-05-09 15:59  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Fix column descriptions.
+
+	  Noticed by: Arthur Ward
+
+2003-05-09 15:23  rtaylor02
+
+	* Makefile, config.mk.in, configure, configure.ac, install-sh,
+	  postgresql_autodoc.pl: Generate a make structure with
+	  installation support.
+
+2003-05-09 10:23  rtaylor02
+
+	* postgresql_autodoc.pl: Ensure that 7.2 (and hopefully 7.1)
+	  multikey foreign keys work the same as the newer versions of
+	  PostgreSQL.
+
+	  Fiddle with the code in that area to reduce the amount of
+	  duplication.
+
+2003-05-09 08:17  rtaylor02
+
+	* dot.tmpl, postgresql_autodoc.pl: Escape the foreign key name in
+	  GraphViz .dot files.
+
+2003-05-09 07:20  rtaylor02
+
+	* dot.tmpl: Add a connection point to the table, and re-use \N for
+	  the name of the node.
+
+2003-05-09 06:51  rtaylor02
+
+	* dot.tmpl: Replace \N with the $table name.
+
+	  Submitted By: rp at raphinou.com
+
+2003-05-09 06:44  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl, sgml.tmpl: Change foreign key
+	  structure over to allow multi-key and single-key keys to work the
+	  same way.
+
+	  This in turn allows them to be shown with #'s attached to them
+	  (like UNIQUE).
+
+	  Suggested By (with reference patch): Arthur Ward
+
+	  Replace 4 leading spaces with a tab for indenting.
+
+2003-05-06 13:06  rtaylor02
+
+	* dia.tmpl: The leading comment broke Dia.
+
+2003-05-06 10:12  rtaylor02
+
+	* sgml.tmpl: Fix up the sgml output to deal with multiple
+	  multi-column unique constraints.
+
+	  Used HTML output as reference.
+
+2003-05-05 23:18  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Rearrange constraints so that a
+	  multi-key unique constraint can be associated with a group
+	  number.
+
+	  That is, multikey unique constraints are referred to as UNIQUE#1,
+	  UNQIUE#2, etc.
+
+	  Like #N's are a part of the same constraint.
+
+	  Suggested by: Arthur Ward
+
+2003-05-05 20:48  rtaylor02
+
+	* postgresql_autodoc.pl: Sprinkle comments.
+
+	  Ensure that the Information_Schema in 7.4 is NOT documented.
+
+2003-05-01 09:57  rtaylor02
+
+	* dia.tmpl, dot.tmpl, html.tmpl, sgml.tmpl: Toss in $Header: /cvsroot/autodoc/autodoc/ChangeLog,v 1.1 2004/05/12 16:00:33 rbt Exp $ where
+	  appropriate
+
+	  Remove <!--	--> style entities from dot.tmpl.  It's not a
+	  flavour of SGML.
+
+2003-05-01 09:53  rtaylor02
+
+	* postgresql_autodoc.pl, sgml.tmpl: Ensure schemas are references
+	  in the permission block for sgml template.
+
+	  Add user variables ass required for html output.
+
+2003-04-30 15:53  rtaylor02
+
+	* postgresql_autodoc.pl: Final round on permissions.  Show all
+	  permissions a user has, not just the first.
+
+2003-04-30 15:39  rtaylor02
+
+	* postgresql_autodoc.pl: Fix permissions to list off all
+	  permissions in sgml output.
+
+	  Add a lower() function to convert strings to lowercase
+
+	  Change more spaces to tabs where appropriate.
+
+2003-04-30 15:07  rtaylor02
+
+	* postgresql_autodoc.pl: Toss the table and usernames into the
+	  permission block.
+
+2003-04-30 14:46  rtaylor02
+
+	* postgresql_autodoc.pl: Spaces to tabs..
+
+2003-04-30 14:40  rtaylor02
+
+	* postgresql_autodoc.pl: permisions -> permissions
+
+2003-04-29 15:53  rtaylor02
+
+	* sgml.tmpl: Close the literal earlier...  Literals aren't variable
+	  (duh!)
+
+2003-04-29 15:36  rtaylor02
+
+	* sgml.tmpl: Gotta use a prepared id for the ID attribute.
+
+2003-04-29 15:29  rtaylor02
+
+	* sgml.tmpl: Toss the View definition into a figure.
+
+	  Fix the function title ID definition.
+
+2003-04-29 14:13  rtaylor02
+
+	* sgml.tmpl: Chapter needs to be closed.
+
+2003-04-29 14:04  rtaylor02
+
+	* sgml.tmpl: Toss the book header onto a single line.
+
+	  It makes it easier for me to munge (oh well).
+
+2003-04-29 10:03  rtaylor02
+
+	* postgresql_autodoc.pl: Fix -f (bump ARGV)
+
+2003-04-24 11:49  rtaylor02
+
+	* sgml.tmpl: Loops are plural... schemas, tables, etc.
+
+2003-04-24 11:40  rtaylor02
+
+	* postgresql_autodoc.pl: Queries exist now.  Drop the comments.
+
+2003-04-24 10:28  rtaylor02
+
+	* postgresql_autodoc.pl: Simplify cross table foreign key links
+	  (use database provided schema rather than first matching table --
+	  fixes problems with linking to wrote schema too).
+
+	  Rename element FK to FKTABLE (better meaning) to match FKSCHEMA.
+
+2003-04-24 10:15  rtaylor02
+
+	* postgresql_autodoc.pl: Ensure that the table of referenced tables
+	  (foreign key links) are only displayed once per table and not
+	  once per key.
+
+2003-04-24 09:57  rtaylor02
+
+	* postgresql_autodoc.pl: Track multi-key indicies and single-key
+	  indicies using a common method.  Let the templates work it out.
+
+2003-04-24 09:56  rtaylor02
+
+	* html.tmpl: If a column is a primary key, don't bother marking as
+	  NOT NULL as well.
+
+2003-04-23 14:47  rtaylor02
+
+	* dot.tmpl: Change the ratio to be 'auto' rather than 1.0.
+
+	  This helps prepare for multi-key primary and foreign keys
+
+	  Submitted by: Arthur Ward
+
+2003-04-23 12:42  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Fix Foreign key references
+	  where multiple schemas are involved (schema prefix was missing)
+
+2003-04-23 12:33  rtaylor02
+
+	* html.tmpl: ESCAPE="???" rather than ESCAPE=???
+
+	  Toss in a . between schema and table in permission blocks.
+
+2003-04-23 12:29  rtaylor02
+
+	* html.tmpl: Ensure the permissions segment is treated the same as
+	  the others when a schema prefix is required.
+
+2003-04-23 12:20  rtaylor02
+
+	* postgresql_autodoc.pl: Correct ID links.  object_id needed to be
+	  incremented prior to recording the value -- not after (duh).
+
+2003-04-23 11:44  rtaylor02
+
+	* postgresql_autodoc.pl: Clean up a slew of formatting (spaces ->
+	  tabs)
+
+2003-04-23 11:34  rtaylor02
+
+	* postgresql_autodoc.pl: Slight stylistic improvements and updated
+	  (or added) comments.
+
+2003-04-23 11:24  rtaylor02
+
+	* postgresql_autodoc.pl: Alphabetize fk_links
+
+2003-04-23 11:17  rtaylor02
+
+	* dia.tmpl: Ensure all TMPL_VAR entries are escaped properly.
+
+2003-04-23 10:59  rtaylor02
+
+	* html.tmpl: Fix up the HTML template for formatting.
+
+2003-04-22 13:07  rtaylor02
+
+	* postgresql_autodoc.pl: Better mark the debug segment
+	  (Data::Dumper) and clean up trailing tabs on some lines
+
+2003-04-22 12:08  rtaylor02
+
+	* sgml.tmpl: SGML cleanups for consistency.
+
+2003-04-22 12:07  rtaylor02
+
+	* html.tmpl: Remove second ESCAPE=HTML
+
+2003-04-22 11:43  rtaylor02
+
+	* dia.tmpl, html.tmpl, postgresql_autodoc.pl, sgml.tmpl: Clean up
+	  formatting of dia.tmpl, html.tmpl.  Ensure ESCAPE=? properties
+	  are applied where appropriate
+
+	  Remove the sgml (docbook) code from postgresql_autodoc.pl, and
+	  toss it into a template.
+
+	  Clean up help (add single schema note).
+
+2003-04-17 17:14  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Have HTML output deal with
+	  schemas properly
+
+	  Use schema.table for links and references when multiple schemas
+	  exist -- or where otherwise hidden from the user.
+
+2003-04-17 14:39  rtaylor02
+
+	* postgresql_autodoc.pl: Allow dumping the structure of a single
+	  schema rather than the entire system.
+
+2003-04-16 14:34  rtaylor02
+
+	* dia.tmpl, dot.tmpl, html.tmpl, postgresql_autodoc.pl: Make dia
+	  templates actually work -- used to crash Dia.
+
+	  Clean up formatting of HTML template (ucase tmpl commands).
+
+	  Fix postgresql_autodoc to drop the asxml items.  Rely on ENCODING
+	  by HTML::Template instead.
+
+2003-04-15 12:53  rtaylor02
+
+	* dia.tmpl, dot.tmpl, postgresql_autodoc.pl: Give proper connection
+	  numbers for dot file -- dia is special, so rename those.
+
+	  DOT template now functions...
+
+2003-04-15 10:17  rtaylor02
+
+	* dia.tmpl, dot.tmpl, postgresql_autodoc.pl: pk_fk_links ->
+	  fk_links
+
+	  Clean up dot template to insert less new lines.
+
+2003-04-15 10:01  rtaylor02
+
+	* postgresql_autodoc.pl: Array values must be separated by ,'s
+
+2003-04-14 20:48  rtaylor02
+
+	* postgresql_autodoc.pl: Clean .dot file support out of autodoc.
+	  Template is the preferred method.
+
+2003-04-14 20:47  rtaylor02
+
+	* dia.tmpl: Stylistic improvements.
+
+2003-04-14 20:44  rtaylor02
+
+	* dot.tmpl: Dot file -- untested.
+
+2003-04-14 15:54  rtaylor02
+
+	* dia.tmpl: Beautification
+
+2003-04-13 17:04  rtaylor02
+
+	* .cvsignore: Ignore .swp files
+
+2003-04-13 17:00  rtaylor02
+
+	* dia.tmpl, html.tmpl, new.dia.tmpl, postgresql_autodoc.pl: Remove
+	  the new.dia.tmpl file. Add dia.tmpl in its place.
+
+	  Update autodoc to generate dia via the templated method only (has
+	  problems for dia).
+
+	  Fix html template for multiple schemas.
+
+2002-10-28 09:41  rtaylor02
+
+	* postgresql_autodoc.pl: Correct a bug in the sql_Columns query for
+	  7.1 databases.  It was inappropriately attempting to use a
+	  namespace.
+
+2002-09-18 10:40  rtaylor02
+
+	* postgresql_autodoc.pl: Clean up dirname / basename generation to
+	  handle ./
+
+	  Clean up template munging to manage templates in a different
+	  directory than the executable.
+
+2002-09-18 10:26  rtaylor02
+
+	* postgresql_autodoc.pl: Add blank fields to Dia output to prevent
+	  Dia from crashing.
+
+2002-09-17 16:58  rtaylor02
+
+	* postgresql_autodoc.pl: Wrap the table and column headers in the
+	  sgml portion in <structname> and <structfield> respectively.
+
+	  These could be replaced with database fields, but it doesn't seem
+	  to buy anything.
+
+2002-09-16 16:52  rtaylor02
+
+	* postgresql_autodoc.pl: Add a few \n's
+
+	  Just prettyprint SQL stuff once.
+
+2002-09-16 15:45  rtaylor02
+
+	* postgresql_autodoc.pl: Add in titleabbrev.
+
+	  Give title and titleabbrev ids.
+
+	  Use 'join' where possible to generate names.
+
+2002-09-16 14:40  rtaylor02
+
+	* postgresql_autodoc.pl: Fix the default depth and indent values to
+	  make things nicer for SGML output.
+
+2002-09-16 14:21  rtaylor02
+
+	* postgresql_autodoc.pl: Pretty Print the View definition for SGML
+	  output as well.
+
+2002-09-16 14:10  rtaylor02
+
+	* html.tmpl, postgresql_autodoc.pl: Simple view support.
+
+2002-09-08 14:57  orangepeel
+
+	* postgresql_autodoc.pl: change options that were index specific
+	  (no-index etc) to no_templates set first object_id to 0 instead
+	  of undef
+
+2002-09-08 08:58  orangepeel
+
+	* new.dia.tmpl, postgresql_autodoc.pl: beginings of dia template
+	  called new.dia.tmpl so as not to overwrite the standard dia
+	  output file added object id and primary key to foriegn key for
+	  connections in dia
+
+2002-09-06 10:46  orangepeel
+
+	* html.tmpl, postgresql_autodoc.pl: use HTML::Template template for
+	  html added write_index_structure replaced with version using html
+	  template
+
+2002-09-05 23:22  rtaylor02
+
+	* postgresql_autodoc.pl: /usr/bin/env perl
+
+	  rather than
+
+	  /usr/bin/perl
+
+2002-09-05 23:10  rtaylor02
+
+	* postgresql_autodoc.pl: sgml, not xml for default docbook
+	  extension.
+
+2002-09-03 12:24  rtaylor02
+
+	* postgresql_autodoc.pl: Whack load of changes to simplify, and
+	  increase the exactness of the queries used.
+
+2002-08-30 19:56  rtaylor02
+
+	* postgresql_autodoc.pl: Nicer note about the website.
+
+2002-08-30 15:03  rtaylor02
+
+	* postgresql_autodoc.pl: Make hte sgml output filename sgml.
+
+	  Make the docbook output fully sgml (suggest sx to convert to
+	  XML).
+
+	  Add the database commect above the Index.
+
+	  Add the date of the output to the HTML documentation.
+
+	  Correct a number of formatting issues.
+
+2002-08-29 19:54  rtaylor02
+
+	* postgresql_autodoc.pl: Output SGML rather than XML.
+
+2002-08-28 10:24  rtaylor02
+
+	* postgresql_autodoc.pl: Ran the file through perltidy, which has
+	  helped clean it up quite a bit.
+
+2002-08-28 10:17  rtaylor02
+
+	* README.dia, postgresql_autodoc.pl: Clean up title printing for
+	  docbook book titles.
+
+	  Clean up a few error messages.
+
+	  Drop README.dia as silly.
+
+2002-08-23 21:39  rtaylor02
+
+	* postgresql_autodoc.pl: Correct some formatting issues.
+
+2002-08-23 21:13  rtaylor02
+
+	* postgresql_autodoc.pl: Only display the schema for dia output if
+	  there is more than one.
+
+	  Remove a good chunk of Dia XML which overrode user defaults.
+	  v0.90 doesn't crash on these.
+
+2002-08-23 20:44  rtaylor02
+
+	* postgresql_autodoc.pl: Clean up internal docs.
+
+	  Don't group in Dia unless there is more than one schema.
+
+2002-08-23 17:07  rtaylor02
+
+	* postgresql_autodoc.pl: Fix the binary name in the help file.
+
+	  Remove references of --filelist.
+
+2002-08-23 11:08  rtaylor02
+
+	* postgresql_autodoc.pl: Remove the docbook DTD declaration.
+	  Assume that the user will include these in their sgml buildlines.
+
+2002-08-23 09:18  rtaylor02
+
+	* postgresql_autodoc.pl: Correct the namespace field name.
+
+2002-08-22 16:43  rtaylor02
+
+	* postgresql_autodoc.pl: Ignore system schemas by variable, incase
+	  they change in the future.
+
+2002-08-16 16:19  rtaylor02
+
+	* postgresql_autodoc.pl: Correct the spelling of structure.
+
+2002-08-12 14:30  rtaylor02
+
+	* postgresql_autodoc.pl: Block quotes from the sgml identifiers.
+
+	  Enable pulling non-system functions from the db in 7.2 or prior.
+
+2002-07-25 19:23  rtaylor02
+
+	* postgresql_autodoc.pl: Fix a few docbook tags.  Remove the old
+	  style tagfix stuff.  Add an optional inclusiong of 'filelist.xml'
+	  for docbook.
+
+2002-07-22 10:04  rtaylor02
+
+	* postgresql_autodoc.pl: Lets make our XRef labels a little more
+	  consistent.
+
+2002-07-21 21:02  rtaylor02
+
+	* postgresql_autodoc.pl: Record Hans's name in the right place.
+
+	  Add database comments to the docbook output.
+
+2002-07-21 10:56  rtaylor02
+
+	* postgresql_autodoc.pl: Clean up our management of id tags.
+	  Remove the database name -- as that is too easily changed.
+
+	  Drop -'s from the end of an id as well, to make it easier to
+	  create xref's
+
+2002-07-20 23:37  rtaylor02
+
+	* postgresql_autodoc.pl: To prevent array and non-array types from
+	  conflicting, sgml_safe_id will trade [] for ARRAY- rather than
+	  --.
+
+2002-07-20 22:43  rtaylor02
+
+	* postgresql_autodoc.pl: Ensure to replace multiple --'s with a
+	  single - in the sgml id.
+
+2002-07-20 14:47  rtaylor02
+
+	* postgresql_autodoc.pl: - Refactor docbook output to use lists
+	  rather than tables.  This removes warnings about columns being
+	  too wide (as there are no columns).  Looks better anyway.
+
+	  - Change permissions to list off the available perms for a user,
+	  rather than a check.
+
+	  - Update column output in 7.3 to use format_type().
+
+	  - Allow overriding tag cleanup by prepending the comment with
+	  @DOCBOOK.  Autodoc will remove the @DOCBOOK portion and use the
+	  string as is.  Otherwise it will replace <, >, &, etc. with SGML
+	  safe characters.
+
+2002-07-19 15:17  rtaylor02
+
+	* postgresql_autodoc.pl: Allow users to enforce that special
+	  characters in comment blocks are not escapted.  The reason for
+	  this is to allow custom markups in the comments (HTML or
+	  DocBook).
+
+2002-07-18 22:47  rtaylor02
+
+	* postgresql_autodoc.pl: Clean up the Docbook output mechanism to
+	  output a book (rather than an appendix).
+
+	  Docbook format outputs functions.
+
+	  Docbook format uses hardcoded system URI rather than public due
+	  to openjade no longer using URLs.
+
+2002-07-17 14:35  rtaylor02
+
+	* postgresql_autodoc.pl: Center permission headers in HTML output.
+
+2002-07-17 14:20  rtaylor02
+
+	* postgresql_autodoc.pl: Be somewhat more cautious with variables.
+	  Test whether they're defined before trying to pull a value.
+
+	  Setup 7.2 and prior DBs to create teh FKGROUP entries as
+	  $system_schema.
+
+2002-07-17 10:25  rtaylor02
+
+	* postgresql_autodoc.pl: Make files overwrite instead of
+	  complaining.
+
+	  Display basics about user created functions (HTML output only).
+
+	  Fix display of permissions and constraints.
+
+	  Ensure full 7.3 compatibility (at this point).
+
+2002-07-16 10:23  rtaylor02
+
+	* postgresql_autodoc.pl: Apply stylesheet and HTML fixes as
+	  supplied by Hans Schou.
+
+2002-07-13 22:14  rtaylor02
+
+	* postgresql_autodoc.pl: Add rudementry support for pulling out the
+	  API of a function set.
+
+2002-07-10 10:36  rtaylor02
+
+	* postgresql_autodoc.pl: Update the script to use schemas instead
+	  of the previous grouping method.
+
+	  For pre 7.3 versions use 'public' as the schema, as this would be
+	  what they upgrade to.
+
+2002-06-05 09:29  rtaylor02
+
+	* postgresql_autodoc.pl: Ensure we catch the trigger permission as
+	  well as user PUBLIC when no other user or group was provided.
+
+2002-06-04 16:31  rtaylor02
+
+	* postgresql_autodoc.pl: Improved job of handling old DBD modules
+	  which don't return bytea values -- but rather return strings in
+	  their place.
+
+	  Basically means escaping the \ in \000 or not.
+
+2002-06-03 11:08  rtaylor02
+
+	* postgresql_autodoc.pl: Escape the backslash before NULL (\000)
+	  for regular expression parsing.
+
+	  Appears in perl 5.6 it comes out as a string rather than as an
+	  expression
+
+2002-04-23 11:15  rtaylor02
+
+	* postgresql_autodoc.pl: Use postgresql environment variables.
+
+2002-04-23 09:44  rtaylor02
+
+	* README.dia: Brief explanation about the usage of the .dia format.
+
+2002-04-23 09:38  rtaylor02
+
+	* postgresql_autodoc.pl: Fix -u to work like -U
+
+	  Bug reported by Neil Prockter
+
+2002-04-18 16:24  iggie
+
+	* postgresql_autodoc.pl: Added directed graph output in the 'dot'
+	  language used by GraphViz.  Changed connections in Dia to connect
+	  primary/foreign key columns rather than just tables.
+
+2002-04-03 15:32  rtaylor02
+
+	* postgresql_autodoc.pl: Initial import of the original.
+

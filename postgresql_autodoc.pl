@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.4 2004/06/29 16:40:40 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.5 2004/10/12 13:33:46 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.23
@@ -895,6 +895,8 @@ while ( my $tables = $sth_Tables->fetchrow_hashref ) {
 		while ($column = pop(@collist) ) {
 			$column =~ s/\s$//;
 			$column =~ s/^\s//;
+			$column =~ s/^"//;
+			$column =~ s/"$//;
 
 			$structure{$group}{$relname}{'COLUMN'}{$column}{'CON'}{$con}{'TYPE'} = $index_type;
 

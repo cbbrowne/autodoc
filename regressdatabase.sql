@@ -1,5 +1,5 @@
 --
--- $Id: regressdatabase.sql,v 1.1 2004/05/12 16:00:37 rbt Exp $
+-- $Id: regressdatabase.sql,v 1.1.1.1 2004/05/12 16:00:37 rbt Exp $
 --
 
 BEGIN;

@@ -1,3 +1,29 @@
+2004-10-12 09:33  rbt
+
+	* postgresql_autodoc.pl: Strip out quotes in the comparison area.
+
+2004-06-29 12:40  rbt
+
+	* dia.tmpl, postgresql_autodoc.pl, zigzag.dia.tmpl: From:
+	  Bort, Paul Subject:	  RE: Patch for Dia templates for
+	  Postgresql_AutoDoc Date:	  Tue, 22 Jun 2004 15:23:24 -0400
+
+	  I've used the same method of shortening as the constraint you
+	  mentioned, but I made it a new entry (table_comment_dia) in the
+	  hash rather than mangle the existing one. I tried to follow the
+	  existing naming conventions and coding style. I picked a total of
+	  45 characters because that seems to be about the right size on my
+	  screen. In testing I also found a bug in Dia that causes a crash
+	  if a comment is too long, but that seems to be in the 100+
+	  character range, so I'm not worried about 45.
+
+	  Here are the patches for postgresql_autodoc.pl, dia.tmpl, and
+	  zigzag.dia.tmpl.
+
+2004-06-02 21:46  rbt
+
+	* ChangeLog, postgresql_autodoc.pl: 1.23 Release
+
 2004-06-01 11:22  rbt
 
 	* postgresql_autodoc.pl: Handle the inability to connect to the

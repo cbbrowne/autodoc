@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.8 2005/02/27 19:38:12 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.9 2005/02/27 19:39:15 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.25
 
 # License
 # -------
-# Copyright (c) 2001-2004, Rod Taylor
+# Copyright (c) 2001-2005, Rod Taylor
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without

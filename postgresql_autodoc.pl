@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.6 2004/10/13 13:46:34 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.7 2005/02/27 18:08:06 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.24
@@ -636,13 +636,14 @@ else {
 }
 
 # Query for function information
-if ( $pgversion >= 70300 ) {
+if ( $pgversion >= 80000 ) {
 	$sql_Function = qq{
 	  SELECT proname AS function_name
 		   , nspname AS namespace
 		   , lanname AS language_name
 		   , pg_catalog.obj_description(pg_proc.oid, 'pg_proc') AS comment
 		   , proargtypes AS function_args
+           , proargnames AS function_arg_names
 		   , prosrc AS source_code
 		   , proretset AS returns_set
 		   , prorettype AS return_type
@@ -657,10 +658,41 @@ if ( $pgversion >= 70300 ) {
 
 	$sql_FunctionArg = qq{
 	  SELECT nspname AS namespace
-		   , pg_catalog.format_type(pg_type.oid, typtypmod) AS type_name
+           , replace(pg_catalog.format_type(pg_type.oid, typtypmod)
+                    , nspname ||'.'
+                    , '') AS type_name
 		FROM pg_catalog.pg_type
 		JOIN pg_catalog.pg_namespace ON (pg_namespace.oid = typnamespace)
 	   WHERE pg_type.oid = ?;
+	};
+} elsif ( $pgversion >= 70300 ) {
+	$sql_Function = qq{
+	  SELECT proname AS function_name
+		   , nspname AS namespace
+		   , lanname AS language_name
+		   , pg_catalog.obj_description(pg_proc.oid, 'pg_proc') AS comment
+		   , proargtypes AS function_args
+           , NULL AS function_arg_names
+		   , prosrc AS source_code
+		   , proretset AS returns_set
+		   , prorettype AS return_type
+		FROM pg_catalog.pg_proc
+		JOIN pg_catalog.pg_language ON (pg_language.oid = prolang)
+		JOIN pg_catalog.pg_namespace ON (pronamespace = pg_namespace.oid)
+		JOIN pg_catalog.pg_type ON (prorettype = pg_type.oid)
+	   WHERE pg_namespace.nspname !~ '$system_schema_list'
+		 AND pg_namespace.nspname ~ '$schemapattern'
+	     AND proname != 'plpgsql_call_handler';
+	};
+
+	$sql_FunctionArg = qq{
+      SELECT nspname AS namespace
+           , replace(pg_catalog.format_type(pg_type.oid, typtypmod)
+                    , nspname ||'.'
+                    , '') AS type_name
+        FROM pg_catalog.pg_type
+        JOIN pg_catalog.pg_namespace ON (pg_namespace.oid = typnamespace)
+       WHERE pg_type.oid = ?;
 	};
 }
 else {
@@ -670,6 +702,7 @@ else {
 		 , lanname AS language_name
 		 , description AS comment
 		 , proargtypes AS function_args
+         , NULL AS function_arg_names
 		 , prosrc AS source_code
 		 , proretset AS returns_set
 		 , prorettype AS return_type
@@ -1047,10 +1080,15 @@ while ( my $functions = $sth_Function->fetchrow_hashref ) {
 	my $group		= $functions->{'namespace'};
 	my $comment	  = $functions->{'comment'};
 	my $functionargs = $functions->{'function_args'};
-
 	my @types = split ( ' ', $functionargs );
 	my $count = 0;
 
+	# Pre-setup argument names when available.
+	my $argnames = $functions->{'function_arg_names'};
+    $argnames =~ s/{(.*)}/\1/;
+    my @names=split(',',$argnames);
+
+	# Setup full argument types -- including the name prefix
 	foreach my $type (@types) {
 		$sth_FunctionArg->execute($type);
 
@@ -1059,11 +1097,16 @@ while ( my $functions = $sth_Function->fetchrow_hashref ) {
 		if ( $count > 0 ) {
 			$functionname .= ', ';
 		}
+  
+        if (scalar(@names) > 0) {
+            $functionname .= $names[$count] .' ';
+        }
 
 		if ( $hash->{'namespace'} ne $system_schema ) {
 			$functionname .= $hash->{'namespace'} . '.';
 		}
 		$functionname .= $hash->{'type_name'};
+         
 		$count++;
 	}
 	$functionname .= ' )';

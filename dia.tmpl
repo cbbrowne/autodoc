@@ -15,6 +15,12 @@
         <dia:string>#<!-- TMPL_VAR ESCAPE="HTML" name="schema" -->#</dia:string>
       </dia:attribute>
 <!-- /TMPL_IF name="number_of_schemas" -->
+      <dia:attribute name="comment">
+        <dia:string>#<!-- TMPL_VAR ESCAPE="HTML" name="table_comment_dia" -->#</dia:string>
+      </dia:attribute>
+      <dia:attribute name="visible_comments">
+        <dia:boolean val="true"/>
+      </dia:attribute>
       <dia:attribute name="abstract">
         <dia:boolean val="false"/>
       </dia:attribute>

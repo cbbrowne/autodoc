@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.1 2004/05/12 16:00:36 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.2 2004/06/01 15:22:56 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.22
@@ -188,7 +188,8 @@ Msg
 my $dsn = "dbi:Pg:dbname=$database";
 $dsn .= ";host=$dbhost" if ( "$dbhost" ne "" );
 $dsn .= ";port=$dbport" if ( "$dbport" ne "" );
-my $dbh = DBI->connect( $dsn, $dbuser, $dbpass );
+my $dbh = DBI->connect( $dsn, $dbuser, $dbpass )
+	or triggerError("Unable to connect due to: $DBD::Pg::errstr");
 
 # Always disconnect from the database if a database handle is setup
 END {
@@ -607,7 +608,16 @@ else {
 }
 
 # Fetch CHECK constraints
-if ( $pgversion >= 70300 ) {
+if ( $pgversion >= 70400 ) {
+	$sql_Constraint = qq{
+	SELECT pg_get_constraintdef(oid) AS constraint_source
+		 , conname AS constraint_name
+	  FROM pg_constraint
+	 WHERE conrelid = ?
+	   AND contype = 'c';
+	};
+}
+elsif ( $pgversion >= 70300 ) {
 	$sql_Constraint = qq{
 	SELECT 'CHECK ' || pg_catalog.substr(consrc, 2, length(consrc) - 2) AS constraint_source
 		 , conname AS constraint_name

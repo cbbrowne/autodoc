@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.9 2005/02/27 19:39:15 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.10 2005/04/18 23:53:52 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.25
@@ -1190,6 +1190,19 @@ sub info_collect($$$$$)
         $struct->{$namespace}{'SCHEMA'}{'COMMENT'} = $comment;
     }
 
+    $sth_Columns->finish();
+    $sth_Constraint->finish();
+    $sth_Database->finish();
+    $sth_Foreign_Keys->finish();
+    $sth_Foreign_Key_Arg->finish();
+    $sth_Function->finish();
+    $sth_FunctionArg->finish();
+    $sth_Indexes->finish();
+    $sth_Primary_Keys->finish();
+    $sth_Schema->finish();
+    $sth_Tables->finish();
+    $sth_Table_Statistics->finish();
+
 } ## end sub info_collect($$$$$)
 
 #####
@@ -1348,6 +1361,10 @@ sub write_using_templates($$$$$)
                       $struct->{$schema}{'TABLE'}{$table}{'COLUMN'}{$column}
                       {'TYPE'},
                     column_type_dbk => docbook(
+                        $struct->{$schema}{'TABLE'}{$table}{'COLUMN'}{$column}
+                          {'TYPE'}
+                    ),
+                    column_type_dot => graphviz(
                         $struct->{$schema}{'TABLE'}{$table}{'COLUMN'}{$column}
                           {'TYPE'}
                     ),
@@ -1654,7 +1671,7 @@ sub write_using_templates($$$$$)
     my @fk_links;
     my @fkeys;
     foreach my $schema ( sort keys %{$struct} ) {
-        foreach my $table ( sort keys %{ $struct->{$schema} } ) {
+        foreach my $table ( sort keys %{ $struct->{$schema}{'TABLE'} } ) {
             foreach my $column (
                 sort {
                     $struct->{$schema}{'TABLE'}{$table}{'COLUMN'}{$a}

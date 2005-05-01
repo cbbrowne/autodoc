@@ -1,6 +1,6 @@
-# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.1 2004/05/12 16:00:34 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.2 2005/05/01 05:32:48 rbt Exp $
 
-TEMPLATES = dia.tmpl dot.tmpl html.tmpl xml.tmpl zigzag.dia.tmpl
+TEMPLATES = dia.tmpl dot.tmpl html.tmpl neato.tmpl xml.tmpl zigzag.dia.tmpl
 BINARY = postgresql_autodoc
 CONFIGFILE = config.mk
 

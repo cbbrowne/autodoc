@@ -1,0 +1,22 @@
+digraph g {
+node [ fontsize = "10", shape = record ];
+edge [];
+<TMPL_LOOP name="schemas"><TMPL_LOOP name="tables"><TMPL_UNLESS
+name="view_definition">
+"<TMPL_IF name="number_of_schemas"><TMPL_VAR
+name="schema_dot">.</TMPL_IF name="number_of_schemas"><TMPL_VAR
+name="table_dot">" [shape = record, label = "{<col0> \N| <TMPL_LOOP
+name="columns"><TMPL_VAR name="column_dot">:  <TMPL_VAR
+name="column_type">\l</TMPL_LOOP name="columns">}" ];
+</TMPL_UNLESS name="view_definition"></TMPL_LOOP
+name="tables"></TMPL_LOOP name="schemas">
+<TMPL_LOOP name="fk_links">
+"<TMPL_IF name="number_of_schemas"><TMPL_VAR
+name="handle0_schema">.</TMPL_IF name="number_of_schemas"><TMPL_VAR
+name="handle0_name">" -> "<TMPL_IF name="number_of_schemas"><TMPL_VAR
+name="handle1_schema">.</TMPL_IF name="number_of_schemas"><TMPL_VAR
+name="handle1_name">" [label="<TMPL_VAR
+name="fk_link_name_dot">"];</TMPL_LOOP name="fk_links">
+}
+
+

@@ -11,8 +11,9 @@ shape = record
 edge [
 ];
 <TMPL_LOOP name="schemas"><TMPL_LOOP name="tables"><TMPL_UNLESS name="view_definition">
-"<TMPL_IF name="number_of_schemas"><TMPL_VAR name="schema_dot">.</TMPL_IF name="number_of_schemas"><TMPL_VAR name="table_dot">" [shape = record, label = "<col0> \N | <TMPL_LOOP name="columns"> <TMPL_VAR name="column_dot">:  <TMPL_VAR name="column_type">\l</TMPL_LOOP name="columns">" ];
+"<TMPL_IF name="number_of_schemas"><TMPL_VAR name="schema_dot">.</TMPL_IF name="number_of_schemas"><TMPL_VAR name="table_dot">" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR> <TMPL_LOOP name="columns"> <TR><TD PORT="ltcol<TMPL_VAR name="column_number">" ></TD><TD align="left" > <TMPL_VAR name="column_dot"> </TD><TD align="left" > <TMPL_VAR name="column_type"> </TD><TD align="left" > <TMPL_LOOP name="column_constraints"><TMPL_IF NAME="column_primary_key">PK</TMPL_IF NAME="column_primary_key"></TMPL_LOOP name="column_constraints"> </TD><TD align="left" > <TMPL_LOOP name="column_constraints"><TMPL_IF NAME="column_fk"><TMPL_IF NAME="__first__">FK</TMPL_IF NAME="__first__"></TMPL_IF NAME="column_fk"></TMPL_LOOP name="column_constraints"> </TD><TD align="left" PORT="rtcol<TMPL_VAR name="column_number">"> </TD></TR></TMPL_LOOP name="columns"> </TABLE>> ];
 </TMPL_UNLESS name="view_definition"></TMPL_LOOP name="tables"></TMPL_LOOP name="schemas">
+
 <TMPL_LOOP name="fk_links">
-"<TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle0_schema">.</TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle0_name">" -> "<TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle1_schema">.</TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle1_name">" [label="<TMPL_VAR name="fk_link_name_dot">"];</TMPL_LOOP name="fk_links">
+"<TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle0_schema">.</TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle0_name">":rtcol<TMPL_VAR name="handle0_connection"> -> "<TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle1_schema">.</TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle1_name">":ltcol<TMPL_VAR name="handle1_connection"> [label="<TMPL_VAR name="fk_link_name_dot">"];</TMPL_LOOP name="fk_links">
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.10 2005/04/18 23:53:52 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.11 2005/05/01 05:13:38 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.25
@@ -198,8 +198,6 @@ Msg
 
     info_collect( $dbh, \%db, $database, $only_schema, $statistics );
 
-    $dbh->disconnect() if $dbh;
-
     # Write out *ALL* templates
     write_using_templates( \%db, $database, $statistics, $template_path,
         $output_filename_base, $wanted_output );
@@ -229,6 +227,7 @@ sub info_collect($$$$$)
     $sth_GetVersion->execute();
     my $version   = $sth_GetVersion->fetchrow_hashref;
     my $pgversion = $version->{'version'};
+    $sth_GetVersion->finish();
 
     # Ensure we only retrieve information for the requested schemas.
     #
@@ -1313,7 +1312,7 @@ sub write_using_templates($$$$$)
                           {
                             column_fk            => 'FOREIGN KEY',
                             column_fk_colnum     => $fkcol,
-                            column_fk_keygroup   => $fkschema,
+                            column_fk_keygroup   => $fkgroup,
                             column_fk_schema     => $fkschema,
                             column_fk_schema_dbk => docbook($fkschema),
                             column_fk_schema_dot => graphviz($fkschema),

@@ -1,3 +1,82 @@
+2005-05-02 22:17  rbt
+
+	* zigzag.dia.tmpl: Prevent Dia 0.94 from crashing by rearranging
+	  the Dependency attributes.
+
+2005-05-02 22:07  rbt
+
+	* dia.tmpl, zigzag.dia.tmpl: Eliminate Dia warnings for newer
+	  versions of dia (new elements).
+
+	  Luckily, Dia will completely ignore these saved values and
+	  calculate it's own instead which is convenient because we really
+	  have no idea where to place things.
+
+2005-05-01 01:32  rbt
+
+	* Makefile, neato.tmpl: Template for the Neato and Twopi tools
+	  (part of GraphViz) submitted by Tony Wasson.
+
+2005-05-01 01:13  rbt
+
+	* postgresql_autodoc.pl: Finish() the GetVersion sql statement.
+
+	  Set the FK Group number back to being a number instead of the
+	  schema name. Accidentally converted earlier while removing the
+	  $group variable.
+
+2005-05-01 01:07  rbt
+
+	* dot.tmpl: Matt Bosworth has provided an updated dot template with
+	  PK, FK information and improved styling.
+
+	  Rod proceeded to break several things, but eventually got it
+	  working again.
+
+2005-04-18 19:53  rbt
+
+	* postgresql_autodoc.pl: Fix GraphViz foreign key links (they were
+	  missing).
+
+2005-04-18 19:48  rbt
+
+	* zigzag.dia.tmpl:
+	  The latest version of dia crashes when I open a dia file produced
+	  with the zigzag.dia.tmpl template. I replaced the following lines
+	  in zigzag.dia.tmpl
+
+	  <dia:point val="0.0,0.0"/>
+
+	  with
+
+	  <dia:point val="1.0,1.0"/>
+
+	  and dia no longer crashes.
+
+	  best whishes,  Piebe de Vries
+
+2005-02-27 14:39  rbt
+
+	* postgresql_autodoc.pl: Bump copyright date.
+
+2005-02-27 14:38  rbt
+
+	* postgresql_autodoc.pl: Do a little bit of cleaning on this old
+	  and crufty code.
+
+2005-02-27 13:08  rbt
+
+	* postgresql_autodoc.pl: Include argument names as provided by
+	  Jacob Smullyan.
+
+	  Clean up handling of argument types from a schema not in the
+	  current path. This means getting rid of the schema prefix added
+	  by format_type so when can add our own when appropriate.
+
+2004-10-13 09:46  rbt
+
+	* ChangeLog, postgresql_autodoc.pl: Push out 1.24
+
 2004-10-12 09:33  rbt
 
 	* postgresql_autodoc.pl: Strip out quotes in the comparison area.

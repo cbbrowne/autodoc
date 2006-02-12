@@ -1,4 +1,4 @@
-<!-- $Header: /cvsroot/autodoc/autodoc/html.tmpl,v 1.1 2004/05/12 16:00:34 rbt Exp $ -->
+<!-- $Header: /cvsroot/autodoc/autodoc/html.tmpl,v 1.2 2006/02/12 20:27:41 rbt Exp $ -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
    "http://www.w3.org/TR/html4/strict.dtd">
 
@@ -232,6 +232,11 @@
 			</ul>
 		<!-- /TMPL_LOOP name="fk_schemas" -->
 		<!-- /TMPL_IF name="fk_schemas" -->
+
+    <!-- Indexes -->
+    <!-- TMPL_LOOP name="indexes" -->
+       <!-- TMPL_VAR name="index_name" --> <!-- TMPL_VAR name="index_definition" -->
+    <!-- /TMPL_LOOP name="indexes" -->
 
 	<!-- View Definition -->
 	<!-- TMPL_IF name="view_definition" -->

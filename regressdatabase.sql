@@ -1,5 +1,5 @@
 --
--- $Id: regressdatabase.sql,v 1.1 2004/05/12 16:00:37 rbt Exp $
+-- $Id: regressdatabase.sql,v 1.2 2006/02/13 01:15:56 rbt Exp $
 --
 
 BEGIN;
@@ -112,4 +112,14 @@ COMMENT ON FUNCTION product.worker(integer, integer) IS
 COMMENT ON FUNCTION warehouse.worker(integer, integer) IS
 'Worker function appropriate for warehouses.';
 
-END;
+
+--
+-- Inheritance
+--
+CREATE SCHEMA inherit
+  CREATE TABLE taba (cola integer)
+  CREATE TABLE tabb (colb integer) inherits(taba)
+  CREATE TABLE tab1 (col1 integer)
+  CREATE TABLE tab1b (col1b integer) inherits(tab1, tabb);
+
+COMMIT;

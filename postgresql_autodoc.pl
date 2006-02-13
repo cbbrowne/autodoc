@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.11 2005/05/01 05:13:38 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.12 2006/02/13 01:15:55 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
-# Postgres Auto-Doc Version 1.25
+# Postgres Auto-Doc Version 1.30
 
 # License
 # -------
@@ -50,8 +50,6 @@ use strict;
 use warnings;
 
 use DBI;
-
-# Allows file locking
 use Fcntl;
 
 # Allows file templates
@@ -193,10 +191,9 @@ Msg
     my $dsn = "dbi:Pg:dbname=$database";
     $dsn .= ";host=$dbhost" if ( "$dbhost" ne "" );
     $dsn .= ";port=$dbport" if ( "$dbport" ne "" );
-    my $dbh = DBI->connect( $dsn, $dbuser, $dbpass )
-      or triggerError("Unable to connect due to: $DBI::errstr");
 
-    info_collect( $dbh, \%db, $database, $only_schema, $statistics );
+    info_collect( [ $dsn, $dbuser, $dbpass ],
+        \%db, $database, $only_schema, $statistics );
 
     # Write out *ALL* templates
     write_using_templates( \%db, $database, $statistics, $template_path,
@@ -209,7 +206,10 @@ Msg
 # Pull out all of the applicable information about a specific database
 sub info_collect($$$$$)
 {
-    my ( $dbh, $db, $database, $only_schema, $statistics ) = @_;
+    my ( $dbConnect, $db, $database, $only_schema, $statistics ) = @_;
+
+    my $dbh = DBI->connect( @{$dbConnect} )
+      or triggerError("Unable to connect due to: $DBI::errstr");
 
     my %struct;
     $db->{$database}{'STRUCT'} = \%struct;
@@ -217,21 +217,13 @@ sub info_collect($$$$$)
 
     # PostgreSQL's version is used to determine what queries are required
     # to retrieve a given information set.
-    my $sql_GetVersion = qq{
-      SELECT cast(substr(version(), 12, 1) as integer) * 10000
-             + cast(substr(version(), 14, 1) as integer) * 100
-             AS version;
-    };
-
-    my $sth_GetVersion = $dbh->prepare($sql_GetVersion);
-    $sth_GetVersion->execute();
-    my $version   = $sth_GetVersion->fetchrow_hashref;
-    my $pgversion = $version->{'version'};
-    $sth_GetVersion->finish();
+    if ( $dbh->{pg_server_version} < 70300 ) {
+        die("PostgreSQL 7.3 and later are supported");
+    }
 
     # Ensure we only retrieve information for the requested schemas.
     #
-    # system_schema	     -> The primary system schema for a database.
+    # system_schema         -> The primary system schema for a database.
     #                       Public is used for verions prior to 7.3
     #
     # system_schema_list -> The list of schemas which we are not supposed
@@ -240,20 +232,12 @@ sub info_collect($$$$$)
     #
     # schemapattern      -> The schema the user provided as a command
     #                       line option.
-    my $schemapattern = '^';
-    my $system_schema;
-    my $system_schema_list;
-    if ( $pgversion >= 70300 ) {
-        $system_schema      = 'pg_catalog';
-        $system_schema_list =
-          'pg_catalog|pg_toast|pg_temp_[0-9]+|information_schema';
-        if ( defined($only_schema) ) {
-            $schemapattern = '^' . $only_schema . '$';
-        }
-    }
-    else {
-        $system_schema      = 'public';
-        $system_schema_list = $system_schema;
+    my $schemapattern      = '^';
+    my $system_schema      = 'pg_catalog';
+    my $system_schema_list =
+      'pg_catalog|pg_toast|pg_temp_[0-9]+|information_schema';
+    if ( defined($only_schema) ) {
+        $schemapattern = '^' . $only_schema . '$';
     }
 
     #
@@ -262,527 +246,297 @@ sub info_collect($$$$$)
     # provide similar output. At some point it should be safe to remove
     # support for older database versions.
     #
-    my $sql_Columns;
-    my $sql_Constraint;
-    my $sql_Database;
-    my $sql_Foreign_Keys;
-    my $sql_Foreign_Key_Arg;
-    my $sql_Function;
-    my $sql_FunctionArg;
-    my $sql_Indexes;
-    my $sql_Primary_Keys;
-    my $sql_Schema;
-    my $sql_Tables;
-    my $sql_Table_Statistics;
+
+    # Fetch the description of the database
+    my $sql_Database = q{
+       SELECT pg_catalog.obj_description(oid, 'pg_database') as comment
+         FROM pg_catalog.pg_database
+        WHERE datname = '$database';
+    };
 
     # Pull out a list of tables, views and special structures.
-    if ( $pgversion >= 70300 ) {
-        $sql_Tables = qq{
-	SELECT nspname as namespace
-		 , relname as tablename
-		 , pg_catalog.pg_get_userbyid(relowner) AS tableowner
-		 , relhasindex as hasindexes
-		 , relhasrules as hasrules
-		 , reltriggers as hastriggers
-		 , pg_class.oid
-		 , pg_catalog.obj_description(pg_class.oid, 'pg_class') as table_description
-		 , relacl
-		 , CASE
-		   WHEN relkind = 'r' THEN
-			 'table'
-		   WHEN relkind = 's' THEN
-			 'special'
-		   ELSE
-			 'view'
-		   END as reltype
-		 , CASE
-		   WHEN relkind = 'v' THEN
-			 pg_get_viewdef(pg_class.oid)
-		   ELSE
-			 NULL
-		   END as view_definition
-	  FROM pg_catalog.pg_class
-	  JOIN pg_catalog.pg_namespace ON (relnamespace = pg_namespace.oid)
-	 WHERE relkind IN ('r', 's', 'v')
-	   AND nspname !~ '$system_schema_list'
-	   AND nspname ~ '$schemapattern';
-	};
+    my $sql_Tables = qq{
+       SELECT nspname as namespace
+            , relname as tablename
+            , pg_catalog.pg_get_userbyid(relowner) AS tableowner
+            , relhasindex as hasindexes
+            , relhasrules as hasrules
+            , reltriggers as hastriggers
+            , pg_class.oid
+            , pg_catalog.obj_description(pg_class.oid, 'pg_class') as table_description
+            , relacl
+            , CASE
+              WHEN relkind = 'r' THEN
+                'table'
+              WHEN relkind = 's' THEN
+                'special'
+              ELSE
+                'view'
+              END as reltype
+            , CASE
+              WHEN relkind = 'v' THEN
+                pg_get_viewdef(pg_class.oid)
+              ELSE
+                NULL
+              END as view_definition
+         FROM pg_catalog.pg_class
+         JOIN pg_catalog.pg_namespace ON (relnamespace = pg_namespace.oid)
+        WHERE relkind IN ('r', 's', 'v')
+          AND nspname !~ '$system_schema_list'
+          AND nspname ~ '$schemapattern';
+    };
 
-        # - uses pg_class.oid
-        $sql_Columns = qq{
-	SELECT attname as column_name
-		 , attlen as column_length
-		 , CASE
-		   WHEN pg_type.typname = 'int4'
-				AND EXISTS (SELECT TRUE
-							  FROM pg_catalog.pg_depend
-							  JOIN pg_catalog.pg_class ON (pg_class.oid = objid)
-							 WHERE refobjsubid = attnum
-							   AND refobjid = attrelid
-							   AND relkind = 'S') THEN
-			 'serial'
-		   WHEN pg_type.typname = 'int8'
-				AND EXISTS (SELECT TRUE
-							  FROM pg_catalog.pg_depend
-							  JOIN pg_catalog.pg_class ON (pg_class.oid = objid)
-							 WHERE refobjsubid = attnum
-							   AND refobjid = attrelid
-							   AND relkind = 'S') THEN
-			 'bigserial'
-		   ELSE
-			 pg_catalog.format_type(atttypid, atttypmod)
-		   END as column_type
-		 , CASE
-		   WHEN attnotnull THEN
-			 cast('NOT NULL' as text)
-		   ELSE
-			 cast('' as text)
-		   END as column_null
-		 , CASE
-		   WHEN pg_type.typname IN ('int4', 'int8')
-				AND EXISTS (SELECT TRUE
-							  FROM pg_catalog.pg_depend
-							  JOIN pg_catalog.pg_class ON (pg_class.oid = objid)
-							 WHERE refobjsubid = attnum
-							   AND refobjid = attrelid
-							   AND relkind = 'S') THEN
-			 NULL
-		   ELSE
-			 adsrc
-		   END as column_default
-		 , pg_catalog.col_description(attrelid, attnum) as column_description
-		 , attnum
-	  FROM pg_catalog.pg_attribute 
-				 JOIN pg_catalog.pg_type ON (pg_type.oid = atttypid) 
-	  LEFT OUTER JOIN pg_catalog.pg_attrdef ON (   attrelid = adrelid 
-											   AND attnum = adnum)
-	 WHERE attnum > 0
-	   AND attisdropped IS FALSE
-	   AND attrelid = ?;
-	};
+    # - uses pg_class.oid
+    my $sql_Columns = q{
+       SELECT attname as column_name
+            , attlen as column_length
+            , CASE
+              WHEN pg_type.typname = 'int4'
+                   AND EXISTS (SELECT TRUE
+                                 FROM pg_catalog.pg_depend
+                                 JOIN pg_catalog.pg_class ON (pg_class.oid = objid)
+                                WHERE refobjsubid = attnum
+                                  AND refobjid = attrelid
+                                  AND relkind = 'S') THEN
+                'serial'
+              WHEN pg_type.typname = 'int8'
+                   AND EXISTS (SELECT TRUE
+                                 FROM pg_catalog.pg_depend
+                                 JOIN pg_catalog.pg_class ON (pg_class.oid = objid)
+                                WHERE refobjsubid = attnum
+                                  AND refobjid = attrelid
+                                  AND relkind = 'S') THEN
+                'bigserial'
+              ELSE
+                pg_catalog.format_type(atttypid, atttypmod)
+              END as column_type
+            , CASE
+              WHEN attnotnull THEN
+                cast('NOT NULL' as text)
+              ELSE
+                cast('' as text)
+              END as column_null
+            , CASE
+              WHEN pg_type.typname IN ('int4', 'int8')
+                   AND EXISTS (SELECT TRUE
+                                 FROM pg_catalog.pg_depend
+                                 JOIN pg_catalog.pg_class ON (pg_class.oid = objid)
+                                WHERE refobjsubid = attnum
+                                  AND refobjid = attrelid
+                                  AND relkind = 'S') THEN
+                NULL
+              ELSE
+                adsrc
+              END as column_default
+            , pg_catalog.col_description(attrelid, attnum) as column_description
+            , attnum
+         FROM pg_catalog.pg_attribute 
+         JOIN pg_catalog.pg_type ON (pg_type.oid = atttypid) 
+    LEFT JOIN pg_catalog.pg_attrdef ON (   attrelid = adrelid 
+                                       AND attnum = adnum)
+        WHERE attnum > 0
+          AND attisdropped IS FALSE
+          AND attrelid = ?;
+    };
 
-    }
-    elsif ( $pgversion >= 70200 ) {
-        $sql_Tables = qq{
-	SELECT 'public' as namespace
-		 , relname as tablename
-		 , pg_get_userbyid(relowner) AS tableowner
-		 , relhasindex as hasindexes
-		 , relhasrules as hasrules
-		 , reltriggers as hastriggers
-		 , pg_class.oid
-		 , obj_description(pg_class.oid, 'pg_class') as table_description
-		 , relacl
-		 , CASE
-		   WHEN relkind = 'r' THEN
-			 'table'
-		   WHEN relkind = 's' THEN
-			 'special'
-		   ELSE
-			 'view'
-		   END as reltype
-		 , CASE
-		   WHEN relkind = 'v' THEN
-			 pg_get_viewdef(pg_class.relname)
-		   ELSE
-			 NULL
-		   END as view_definition
-	  FROM pg_class
-	 WHERE relkind in ('r', 's', 'v')
-	   AND relname NOT LIKE 'pg_%';
-	};
-
-        # - uses pg_class.oid
-        $sql_Columns = qq{
-	SELECT attname as column_name
-		 , attlen as column_length
-		 , CASE
-		   WHEN pg_type.typname = 'int4'
-				AND adsrc LIKE 'nextval(%' THEN
-			 'serial'
-		   WHEN pg_type.typname = 'int8'
-				AND adsrc LIKE 'nextval(%' THEN
-			 'bigserial'
-		   ELSE
-			 format_type(atttypid, atttypmod)
-		   END as column_type
-		 , CASE
-		   WHEN attnotnull IS TRUE THEN
-			 'NOT NULL'::text
-		   ELSE
-			 ''::text
-		   END as column_null
-		 , CASE
-		   WHEN pg_type.typname in ('int4', 'int8')
-				AND adsrc LIKE 'nextval(%' THEN
-			 NULL
-		   ELSE
-			 adsrc
-		   END as column_default
-		 , col_description(attrelid, attnum) as column_description
-		 , attnum
-	  FROM pg_attribute 
-				 JOIN pg_type ON (pg_type.oid = pg_attribute.atttypid) 
-	  LEFT OUTER JOIN pg_attrdef ON (   pg_attribute.attrelid = pg_attrdef.adrelid 
-									AND pg_attribute.attnum = pg_attrdef.adnum)
-	 WHERE attnum > 0
-	   AND attrelid = ?;
-	};
-
-    }
-    else {
-
-        # 7.1 or earlier has a different description structure
-
-        $sql_Tables = qq{
-	SELECT 'public' as namespace
-		 , relname as tablename
-		 , pg_get_userbyid(relowner) AS tableowner
-		 , relhasindex as hasindexes
-		 , relhasrules as hasrules
-		 , reltriggers as hastriggers
-		 , pg_class.oid
-		 , obj_description(pg_class.oid) as table_description
-		 , 'table' as reltype
-		 , NULL as view_definition
-	  FROM pg_class
-	 WHERE relkind IN ('r', 's')
-	   AND relname NOT LIKE 'pg_%';
-	};
-
-        # - uses pg_class.oid
-        $sql_Columns = qq{
-	SELECT attname as column_name
-		 , attlen as column_length
-		 , CASE
-		   WHEN pg_type.typname = 'int4'
-				AND adsrc LIKE 'nextval(%' THEN
-			 'serial'
-		   WHEN pg_type.typname = 'int8'
-				AND adsrc LIKE 'nextval(%' THEN
-			 'bigserial'
-		   ELSE
-			 format_type(atttypid, atttypmod)
-		   END as column_type
-		 , CASE
-		   WHEN attnotnull IS TRUE THEN
-			 'NOT NULL'::text
-		   ELSE
-			 ''::text
-		   END as column_null
-		 , CASE
-		   WHEN pg_type.typname in ('int4', 'int8')
-				AND adsrc LIKE 'nextval(%' THEN
-			 NULL
-		   ELSE
-			 adsrc
-		   END as column_default
-		 , description as column_description
-		 , attnum
-	  FROM pg_attribute 
-				 JOIN pg_type ON (pg_type.oid = pg_attribute.atttypid) 
-	  LEFT OUTER JOIN pg_attrdef ON (   pg_attribute.attrelid = pg_attrdef.adrelid 
-									AND pg_attribute.attnum = pg_attrdef.adnum)
-	  LEFT OUTER JOIN pg_description ON (pg_description.objoid = pg_attribute.oid)
-	 WHERE attnum > 0
-	   AND attrelid = ?;
-	};
-    }
-
+    my $sql_Table_Statistics;
     if ( $statistics == 1 ) {
-        if ( $pgversion <= 70300 ) {
+        if ( $dbh->{pg_server_version} <= 70300 ) {
             triggerError(
-"Table statistics supported on PostgreSQL 7.4 and later.\nRemove --statistics flag and try again."
-            );
+                    "Table statistics supported on PostgreSQL 7.4 and later.\n"
+                  . "Remove --statistics flag and try again." );
         }
 
-        $sql_Table_Statistics = qq{
-		SELECT table_len
-		     , tuple_count
-		     , tuple_len
-		     , CAST(tuple_percent AS numeric(20,2)) AS tuple_percent
-		     , dead_tuple_count
-		     , dead_tuple_len
-		     , CAST(dead_tuple_percent AS numeric(20,2)) AS dead_tuple_percent
-		     , CAST(free_space AS numeric(20,2)) AS free_space
-		     , CAST(free_percent AS numeric(20,2)) AS free_percent
-		  FROM pgstattuple(CAST(? AS oid));
-	};
+        $sql_Table_Statistics = q{
+           SELECT table_len
+                , tuple_count
+                , tuple_len
+                , CAST(tuple_percent AS numeric(20,2)) AS tuple_percent
+                , dead_tuple_count
+                , dead_tuple_len
+                , CAST(dead_tuple_percent AS numeric(20,2)) AS dead_tuple_percent
+                , CAST(free_space AS numeric(20,2)) AS free_space
+                , CAST(free_percent AS numeric(20,2)) AS free_percent
+             FROM pgstattuple(CAST(? AS oid));
+        };
     }
 
-    if ( $pgversion >= 70300 ) {
-        $sql_Indexes = qq{
-	SELECT schemaname
-	     , tablename
-	     , indexname
-	     , substring(    indexdef
-	                FROM position('(' IN indexdef) + 1
-                     FOR length(indexdef) - position('(' IN indexdef) - 1
-                    ) AS indexdef
-      FROM pg_catalog.pg_indexes
-	 WHERE substring(indexdef FROM 8 FOR 6) != 'UNIQUE'
-	   AND schemaname = ?
-	   AND tablename = ?;
-	};
-    }
-    else {
-        $sql_Indexes = qq{
-	SELECT NULL AS schemaname
-	     , NULL AS tablename
-	     , NULL AS indexname
-	     , NULL AS indexdef
-	 WHERE TRUE = FALSE AND ? = ?;
-	};
-    }
+    my $sql_Indexes = q{
+       SELECT schemaname
+            , tablename
+            , indexname
+            , substring(    indexdef
+                       FROM position('(' IN indexdef) + 1
+                        FOR length(indexdef) - position('(' IN indexdef) - 1
+                       ) AS indexdef
+         FROM pg_catalog.pg_indexes
+        WHERE substring(indexdef FROM 8 FOR 6) != 'UNIQUE'
+          AND schemaname = ?
+          AND tablename = ?;
+    };
+
+    my $sql_Inheritance = qq{
+       SELECT parnsp.nspname AS par_schemaname
+            , parcla.relname AS par_tablename
+            , chlnsp.nspname AS chl_schemaname
+            , chlcla.relname AS chl_tablename
+         FROM pg_catalog.pg_inherits
+         JOIN pg_catalog.pg_class AS chlcla ON (chlcla.oid = inhrelid)
+         JOIN pg_catalog.pg_namespace AS chlnsp ON (chlnsp.oid = chlcla.relnamespace)
+         JOIN pg_catalog.pg_class AS parcla ON (parcla.oid = inhparent)
+         JOIN pg_catalog.pg_namespace AS parnsp ON (parnsp.oid = parcla.relnamespace)
+        WHERE chlnsp.nspname = ?
+          AND chlcla.relname = ?
+          AND chlnsp.nspname ~ '$schemapattern'
+          AND parnsp.nspname ~ '$schemapattern';
+    };
 
     # Fetch the list of PRIMARY and UNIQUE keys
-    if ( $pgversion >= 70300 ) {
-        $sql_Primary_Keys = qq{
-	SELECT conname AS constraint_name
-		 , pg_catalog.pg_get_indexdef(d.objid) AS constraint_definition
-		 , CASE
-		   WHEN contype = 'p' THEN
-			 'PRIMARY KEY'
-		   ELSE
-			 'UNIQUE'
-		   END as constraint_type
-	  FROM pg_catalog.pg_constraint AS c
-	  JOIN pg_catalog.pg_depend AS d ON (d.refobjid = c.oid)
-	 WHERE contype IN ('p', 'u')
-	   AND deptype = 'i'
-	   AND conrelid = ?;
-	};
-
-    }
-    else {
-
-        # - uses pg_class.oid
-        $sql_Primary_Keys = qq{
-	SELECT i.relname AS constraint_name
-		 , pg_get_indexdef(pg_index.indexrelid) AS constraint_definition
-		 , CASE
-		   WHEN indisprimary THEN
-			 'PRIMARY KEY'
-		   ELSE
-			 'UNIQUE'
-		   END as constraint_type
-	  FROM pg_index
-		 , pg_class as i 
-	 WHERE i.oid = pg_index.indexrelid
-	   AND pg_index.indisunique
-	   AND pg_index.indrelid = ?;
-	};
-    }
+    my $sql_Primary_Keys = q{
+       SELECT conname AS constraint_name
+            , pg_catalog.pg_get_indexdef(d.objid) AS constraint_definition
+            , CASE
+              WHEN contype = 'p' THEN
+                'PRIMARY KEY'
+              ELSE
+                'UNIQUE'
+              END as constraint_type
+         FROM pg_catalog.pg_constraint AS c
+         JOIN pg_catalog.pg_depend AS d ON (d.refobjid = c.oid)
+        WHERE contype IN ('p', 'u')
+          AND deptype = 'i'
+          AND conrelid = ?;
+    };
 
     # FOREIGN KEY fetch
     #
     # Don't return the constraint name if it was automatically generated by
     # PostgreSQL.  The $N (where N is an integer) is not a descriptive enough
     # piece of information to be worth while including in the various outputs.
-    if ( $pgversion >= 70300 ) {
-        $sql_Foreign_Keys = qq{
-	SELECT pg_constraint.oid
-		 , pg_namespace.nspname AS namespace
-		 , CASE WHEN substring(pg_constraint.conname FROM 1 FOR 1) = '\$' THEN ''
-		   ELSE pg_constraint.conname
-		   END AS constraint_name
-		 , conkey AS constraint_key
-		 , confkey AS constraint_fkey
-		 , confrelid AS foreignrelid
-	  FROM pg_catalog.pg_constraint
-	  JOIN pg_catalog.pg_class ON (pg_class.oid = conrelid)
-	  JOIN pg_catalog.pg_class AS pc ON (pc.oid = confrelid)
-	  JOIN pg_catalog.pg_namespace ON (pg_class.relnamespace = pg_namespace.oid)
-	  JOIN pg_catalog.pg_namespace AS pn ON (pn.oid = pc.relnamespace)
-	 WHERE contype = 'f'
-	   AND conrelid = ?
-	   AND pg_namespace.nspname ~ '$schemapattern'
-	   AND pn.nspname ~ '$schemapattern';
-	};
+    my $sql_Foreign_Keys = qq{
+       SELECT pg_constraint.oid
+            , pg_namespace.nspname AS namespace
+            , CASE WHEN substring(pg_constraint.conname FROM 1 FOR 1) = '\$' THEN ''
+              ELSE pg_constraint.conname
+              END AS constraint_name
+            , conkey AS constraint_key
+            , confkey AS constraint_fkey
+            , confrelid AS foreignrelid
+         FROM pg_catalog.pg_constraint
+         JOIN pg_catalog.pg_class ON (pg_class.oid = conrelid)
+         JOIN pg_catalog.pg_class AS pc ON (pc.oid = confrelid)
+         JOIN pg_catalog.pg_namespace ON (pg_class.relnamespace = pg_namespace.oid)
+         JOIN pg_catalog.pg_namespace AS pn ON (pn.oid = pc.relnamespace)
+        WHERE contype = 'f'
+          AND conrelid = ?
+          AND pg_namespace.nspname ~ '$schemapattern'
+          AND pn.nspname ~ '$schemapattern';
+    };
 
-        $sql_Foreign_Key_Arg = qq{
-	 SELECT attname AS attribute_name
-		  , relname AS relation_name
-		  , nspname AS namespace
-	   FROM pg_catalog.pg_attribute
-	   JOIN pg_catalog.pg_class ON (pg_class.oid = attrelid)
-	   JOIN pg_catalog.pg_namespace ON (relnamespace = pg_namespace.oid)
-	  WHERE attrelid = ?
-		AND attnum = ?;
-	};
-    }
-    else {
-
-        # - uses pg_class.oid
-        $sql_Foreign_Keys = q{
-	SELECT oid
-		 , 'public' AS namespace
-		 , CASE WHEN substring(tgname from 1 for 1) = '$' THEN ''
-		   ELSE tgname
-		   END AS constraint_name
-		 , tgnargs AS number_args
-		 , tgargs AS args
-	  FROM pg_trigger
-	 WHERE tgisconstraint = TRUE
-	   AND tgtype = 21
-	   AND tgrelid = ?;
-	};
-
-        $sql_Foreign_Key_Arg = qq{SELECT TRUE WHERE ? = 0 and ? = 0;};
-    }
+    my $sql_Foreign_Key_Arg = q{
+       SELECT attname AS attribute_name
+            , relname AS relation_name
+            , nspname AS namespace
+         FROM pg_catalog.pg_attribute
+         JOIN pg_catalog.pg_class ON (pg_class.oid = attrelid)
+         JOIN pg_catalog.pg_namespace ON (relnamespace = pg_namespace.oid)
+        WHERE attrelid = ?
+          AND attnum = ?;
+    };
 
     # Fetch CHECK constraints
-    if ( $pgversion >= 70400 ) {
-        $sql_Constraint = qq{
-	SELECT pg_get_constraintdef(oid) AS constraint_source
-		 , conname AS constraint_name
-	  FROM pg_constraint
-	 WHERE conrelid = ?
-	   AND contype = 'c';
-	};
-    }
-    elsif ( $pgversion >= 70300 ) {
-        $sql_Constraint = qq{
-	SELECT 'CHECK ' || pg_catalog.substr(consrc, 2, length(consrc) - 2) AS constraint_source
-		 , conname AS constraint_name
-	  FROM pg_constraint
-	 WHERE conrelid = ?
-	   AND contype = 'c';
-	};
+    my $sql_Constraint;
+    if ( $dbh->{pg_server_version} >= 70400 ) {
+        $sql_Constraint = q{
+           SELECT pg_get_constraintdef(oid) AS constraint_source
+                , conname AS constraint_name
+             FROM pg_constraint
+            WHERE conrelid = ?
+              AND contype = 'c';
+        };
     }
     else {
-        $sql_Constraint = qq{
-	SELECT 'CHECK ' || substr(rcsrc, 2, length(rcsrc) - 2) AS constraint_source
-		 , rcname AS constraint_name
-	  FROM pg_relcheck
-	 WHERE rcrelid = ?;
-	};
+        $sql_Constraint = q{
+           SELECT 'CHECK ' || pg_catalog.substr(consrc, 2, length(consrc) - 2) AS constraint_source
+                , conname AS constraint_name
+             FROM pg_constraint
+            WHERE conrelid = ?
+              AND contype = 'c';
+        };
     }
 
     # Query for function information
-    if ( $pgversion >= 80000 ) {
+    my $sql_Function;
+    my $sql_FunctionArg;
+    if ( $dbh->{pg_server_version} >= 80000 ) {
         $sql_Function = qq{
-	  SELECT proname AS function_name
-		   , nspname AS namespace
-		   , lanname AS language_name
-		   , pg_catalog.obj_description(pg_proc.oid, 'pg_proc') AS comment
-		   , proargtypes AS function_args
-           , proargnames AS function_arg_names
-		   , prosrc AS source_code
-		   , proretset AS returns_set
-		   , prorettype AS return_type
-		FROM pg_catalog.pg_proc
-		JOIN pg_catalog.pg_language ON (pg_language.oid = prolang)
-		JOIN pg_catalog.pg_namespace ON (pronamespace = pg_namespace.oid)
-		JOIN pg_catalog.pg_type ON (prorettype = pg_type.oid)
-	   WHERE pg_namespace.nspname !~ '$system_schema_list'
-		 AND pg_namespace.nspname ~ '$schemapattern'
-	     AND proname != 'plpgsql_call_handler';
-	};
+           SELECT proname AS function_name
+                , nspname AS namespace
+                , lanname AS language_name
+                , pg_catalog.obj_description(pg_proc.oid, 'pg_proc') AS comment
+                , proargtypes AS function_args
+                , proargnames AS function_arg_names
+                , prosrc AS source_code
+                , proretset AS returns_set
+                , prorettype AS return_type
+             FROM pg_catalog.pg_proc
+             JOIN pg_catalog.pg_language ON (pg_language.oid = prolang)
+             JOIN pg_catalog.pg_namespace ON (pronamespace = pg_namespace.oid)
+             JOIN pg_catalog.pg_type ON (prorettype = pg_type.oid)
+            WHERE pg_namespace.nspname !~ '$system_schema_list'
+              AND pg_namespace.nspname ~ '$schemapattern'
+              AND proname != 'plpgsql_call_handler';
+        };
 
-        $sql_FunctionArg = qq{
-	  SELECT nspname AS namespace
-           , replace(pg_catalog.format_type(pg_type.oid, typtypmod)
-                    , nspname ||'.'
-                    , '') AS type_name
-		FROM pg_catalog.pg_type
-		JOIN pg_catalog.pg_namespace ON (pg_namespace.oid = typnamespace)
-	   WHERE pg_type.oid = ?;
-	};
-    }
-    elsif ( $pgversion >= 70300 ) {
-        $sql_Function = qq{
-	  SELECT proname AS function_name
-		   , nspname AS namespace
-		   , lanname AS language_name
-		   , pg_catalog.obj_description(pg_proc.oid, 'pg_proc') AS comment
-		   , proargtypes AS function_args
-           , NULL AS function_arg_names
-		   , prosrc AS source_code
-		   , proretset AS returns_set
-		   , prorettype AS return_type
-		FROM pg_catalog.pg_proc
-		JOIN pg_catalog.pg_language ON (pg_language.oid = prolang)
-		JOIN pg_catalog.pg_namespace ON (pronamespace = pg_namespace.oid)
-		JOIN pg_catalog.pg_type ON (prorettype = pg_type.oid)
-	   WHERE pg_namespace.nspname !~ '$system_schema_list'
-		 AND pg_namespace.nspname ~ '$schemapattern'
-	     AND proname != 'plpgsql_call_handler';
-	};
-
-        $sql_FunctionArg = qq{
-      SELECT nspname AS namespace
-           , replace(pg_catalog.format_type(pg_type.oid, typtypmod)
-                    , nspname ||'.'
-                    , '') AS type_name
-        FROM pg_catalog.pg_type
-        JOIN pg_catalog.pg_namespace ON (pg_namespace.oid = typnamespace)
-       WHERE pg_type.oid = ?;
-	};
+        $sql_FunctionArg = q{
+           SELECT nspname AS namespace
+                , replace(pg_catalog.format_type(pg_type.oid, typtypmod)
+                         , nspname ||'.'
+                         , '') AS type_name
+             FROM pg_catalog.pg_type
+             JOIN pg_catalog.pg_namespace ON (pg_namespace.oid = typnamespace)
+            WHERE pg_type.oid = ?;
+        };
     }
     else {
         $sql_Function = qq{
-	SELECT proname AS function_name
-		 , 'public' AS namespace
-		 , lanname AS language_name
-		 , description AS comment
-		 , proargtypes AS function_args
-         , NULL AS function_arg_names
-		 , prosrc AS source_code
-		 , proretset AS returns_set
-		 , prorettype AS return_type
-	  FROM pg_proc
-	  JOIN pg_language ON (pg_language.oid = prolang)
-	  LEFT OUTER JOIN pg_description ON (objoid = pg_proc.oid)
-	 WHERE pg_proc.oid > 16000
-	   AND proname != 'plpgsql_call_handler';
-	 };
+           SELECT proname AS function_name
+                , nspname AS namespace
+                , lanname AS language_name
+                , pg_catalog.obj_description(pg_proc.oid, 'pg_proc') AS comment
+                , proargtypes AS function_args
+                , NULL AS function_arg_names
+                , prosrc AS source_code
+                , proretset AS returns_set
+                , prorettype AS return_type
+             FROM pg_catalog.pg_proc
+             JOIN pg_catalog.pg_language ON (pg_language.oid = prolang)
+             JOIN pg_catalog.pg_namespace ON (pronamespace = pg_namespace.oid)
+             JOIN pg_catalog.pg_type ON (prorettype = pg_type.oid)
+            WHERE pg_namespace.nspname !~ '$system_schema_list'
+              AND pg_namespace.nspname ~ '$schemapattern'
+              AND proname != 'plpgsql_call_handler';
+        };
 
-        $sql_FunctionArg = qq{
-	SELECT 'public' AS namespace
-		 , format_type(pg_type.oid, typtypmod) AS type_name
-	  FROM pg_type
-	 WHERE pg_type.oid = ?;
-	};
+        $sql_FunctionArg = q{
+           SELECT nspname AS namespace
+                , replace(pg_catalog.format_type(pg_type.oid, typtypmod)
+                         , nspname ||'.'
+                         , '') AS type_name
+             FROM pg_catalog.pg_type
+             JOIN pg_catalog.pg_namespace ON (pg_namespace.oid = typnamespace)
+            WHERE pg_type.oid = ?;
+        };
     }
 
     # Fetch schema information.
-    if ( $pgversion >= 70300 ) {
-        $sql_Schema = qq{
-	SELECT pg_catalog.obj_description(oid, 'pg_namespace') AS comment
-		 , nspname as namespace
-	  FROM pg_catalog.pg_namespace
-     WHERE pg_namespace.nspname !~ '$system_schema_list'
-       AND pg_namespace.nspname ~ '$schemapattern';
-	};
-    }
-    else {
-
-        # In PostgreSQL 7.2 and prior, schemas were not a part of the system.
-        # Dummy query returns no rows to prevent added logic later on.
-        $sql_Schema = qq{SELECT TRUE WHERE TRUE = FALSE;};
-    }
-
-    # Fetch the description of the database
-    if ( $pgversion >= 70300 ) {
-        $sql_Database = qq{
-	SELECT pg_catalog.obj_description(oid, 'pg_database') as comment
-	  FROM pg_catalog.pg_database
-	 WHERE datname = '$database';
-	};
-    }
-    elsif ( $pgversion == 70200 ) {
-        $sql_Database = qq{
-	SELECT obj_description(oid, 'pg_database') as comment
-	  FROM pg_database
-	 WHERE datname = '$database';
-	};
-    }
-    else {
-
-        # In PostgreSQL 7.1, the database did not have comment support
-        $sql_Database = qq{ SELECT TRUE as comment WHERE TRUE = FALSE;};
-    }
+    my $sql_Schema = qq{
+       SELECT pg_catalog.obj_description(oid, 'pg_namespace') AS comment
+            , nspname as namespace
+         FROM pg_catalog.pg_namespace
+        WHERE pg_namespace.nspname !~ '$system_schema_list'
+          AND pg_namespace.nspname ~ '$schemapattern';
+    };
 
     my $sth_Columns          = $dbh->prepare($sql_Columns);
     my $sth_Constraint       = $dbh->prepare($sql_Constraint);
@@ -792,6 +546,7 @@ sub info_collect($$$$$)
     my $sth_Function         = $dbh->prepare($sql_Function);
     my $sth_FunctionArg      = $dbh->prepare($sql_FunctionArg);
     my $sth_Indexes          = $dbh->prepare($sql_Indexes);
+    my $sth_Inheritance      = $dbh->prepare($sql_Inheritance);
     my $sth_Primary_Keys     = $dbh->prepare($sql_Primary_Keys);
     my $sth_Schema           = $dbh->prepare($sql_Schema);
     my $sth_Tables           = $dbh->prepare($sql_Tables);
@@ -1002,84 +757,51 @@ sub info_collect($$$$$)
             my $fschema;
             my $ftable;
 
-            if ( $pgversion >= 70300 ) {
-                my $fkey   = $forcols->{'constraint_fkey'};
-                my $keys   = $forcols->{'constraint_key'};
-                my $frelid = $forcols->{'foreignrelid'};
+            my $fkey   = $forcols->{'constraint_fkey'};
+            my $keys   = $forcols->{'constraint_key'};
+            my $frelid = $forcols->{'foreignrelid'};
 
-                # Since decent array support was not added to 7.4, and
-                # we want to support 7.3 as well, we parse the text version
-                # of the array by hand rather than combining this and
-                # Foreign_Key_Arg query into a single query.
-                $fkey =~ s/^{//g;
-                $fkey =~ s/}$//g;
-                $fkey =~ s/"//g;
+            # Since decent array support was not added to 7.4, and
+            # we want to support 7.3 as well, we parse the text version
+            # of the array by hand rather than combining this and
+            # Foreign_Key_Arg query into a single query.
+            $fkey =~ s/^{//g;
+            $fkey =~ s/}$//g;
+            $fkey =~ s/"//g;
 
-                $keys =~ s/^{//g;
-                $keys =~ s/}$//g;
-                $keys =~ s/"//g;
+            $keys =~ s/^{//g;
+            $keys =~ s/}$//g;
+            $keys =~ s/"//g;
 
-                my @keyset  = split( /,/, $keys );
-                my @fkeyset = split( /,/, $fkey );
+            my @keyset  = split( /,/, $keys );
+            my @fkeyset = split( /,/, $fkey );
 
-                # Convert the list of column numbers into column names for the
-                # local side.
-                foreach my $k (@keyset) {
-                    $sth_Foreign_Key_Arg->execute( $reloid, $k );
+            # Convert the list of column numbers into column names for the
+            # local side.
+            foreach my $k (@keyset) {
+                $sth_Foreign_Key_Arg->execute( $reloid, $k );
 
-                    my $row = $sth_Foreign_Key_Arg->fetchrow_hashref;
+                my $row = $sth_Foreign_Key_Arg->fetchrow_hashref;
 
-                    push( @keylist, $row->{'attribute_name'} );
-                }
-
-                # Convert the list of columns numbers into column names
-                # for the referenced side. Grab the table and namespace
-                # while we're here.
-                foreach my $k (@fkeyset) {
-                    $sth_Foreign_Key_Arg->execute( $frelid, $k );
-
-                    my $row = $sth_Foreign_Key_Arg->fetchrow_hashref;
-
-                    push( @fkeylist, $row->{'attribute_name'} );
-                    $fschema = $row->{'namespace'};
-                    $ftable  = $row->{'relation_name'};
-                }
-
-                # Deal with common catalog issues.
-                die "FKEY $con Broken -- fix your PostgreSQL installation"
-                  if $#keylist != $#fkeylist;
+                push( @keylist, $row->{'attribute_name'} );
             }
-            else {
-                my $keyname;        # Throw away
-                my $table;          # Throw away
-                my $unspecified;    # Throw away
-                my @columns;
 
-                my $nargs = $forcols->{'number_args'};
-                my $args  = $forcols->{'args'};
+            # Convert the list of columns numbers into column names
+            # for the referenced side. Grab the table and namespace
+            # while we're here.
+            foreach my $k (@fkeyset) {
+                $sth_Foreign_Key_Arg->execute( $frelid, $k );
 
-                # This database doesn't support namespaces, so use the default
-                $fschema = $system_schema;
+                my $row = $sth_Foreign_Key_Arg->fetchrow_hashref;
 
-                ( $keyname, $table, $ftable, $unspecified, @columns ) =
-                  split( /\000/, $args );
-
-                # Account for old versions which don't handle NULL
-                # but instead return a string of the escape sequence
-                if ( !defined($ftable) ) {
-                    ( $keyname, $table, $ftable, $unspecified, @columns ) =
-                      split( /\\000/, $args );
-                }
-
-                # Push the column list stored into @columns into
-                # the key and fkey lists
-                while ( my $column = pop(@columns)
-                    and my $fcolumn = pop(@columns) )
-                {
-                    push( @keylist,  $column );
-                    push( @fkeylist, $fcolumn );
-                }
+                push( @fkeylist, $row->{'attribute_name'} );
+                $fschema = $row->{'namespace'};
+                $ftable  = $row->{'relation_name'};
             }
+
+            # Deal with common catalog issues.
+            die "FKEY $con Broken -- fix your PostgreSQL installation"
+              if $#keylist != $#fkeylist;
 
             # Load up the array based on the information discovered
             # using the information retrieval methods above.
@@ -1122,6 +844,15 @@ sub info_collect($$$$$)
         while ( my $idx = $sth_Indexes->fetchrow_hashref ) {
             $struct->{$schema}{'TABLE'}{$relname}{'INDEX'}
               { $idx->{'indexname'} } = $idx->{'indexdef'};
+        }
+
+        # Extract Inheritance information
+        $sth_Inheritance->execute( $schema, $relname );
+        while ( my $inherit = $sth_Inheritance->fetchrow_hashref ) {
+            my $parSch = $inherit->{'par_schemaname'};
+            my $parTab = $inherit->{'par_tablename'};
+            $struct->{$schema}{'TABLE'}{$relname}{'INHERIT'}{$parSch}{$parTab} =
+              1;
         }
     }
 
@@ -1197,10 +928,13 @@ sub info_collect($$$$$)
     $sth_Function->finish();
     $sth_FunctionArg->finish();
     $sth_Indexes->finish();
+    $sth_Inheritance->finish();
     $sth_Primary_Keys->finish();
     $sth_Schema->finish();
     $sth_Tables->finish();
     $sth_Table_Statistics->finish();
+
+    $dbh->disconnect;
 
 } ## end sub info_collect($$$$$)
 
@@ -1431,6 +1165,38 @@ sub write_using_templates($$$$$)
                   };
             }
 
+            my @inherits;
+            foreach my $inhSch (
+                sort keys %{ $struct->{$schema}{'TABLE'}{$table}{'INHERIT'} } )
+            {
+                foreach my $inhTab (
+                    sort keys
+                    %{ $struct->{$schema}{'TABLE'}{$table}{'INHERIT'}{$inhSch} }
+                  )
+                {
+                    push @inherits,
+                      {
+                        table      => $table,
+                        table_dbk  => docbook($table),
+                        table_dot  => graphviz($table),
+                        schema     => $schema,
+                        schema_dbk => docbook($schema),
+                        schema_dot => graphviz($schema),
+                        sgmlid     =>
+                          sgml_safe_id( join( '.', $schema, 'table', $table ) ),
+                        parent_sgmlid => sgml_safe_id(
+                            join( '.', $inhSch, 'table', $inhTab )
+                        ),
+                        parent_table      => $inhTab,
+                        parent_table_dbk  => docbook($inhTab),
+                        parent_table_dot  => graphviz($inhTab),
+                        parent_schema     => $inhSch,
+                        parent_schema_dbk => docbook($inhSch),
+                        parent_schema_dot => graphviz($inhSch),
+                      };
+                }
+            }
+
             # Foreign Key Discovery
             #
             # $lastmatch is used to ensure that we only supply a result a
@@ -1606,6 +1372,7 @@ sub write_using_templates($$$$$)
                 constraints         => \@constraints,
                 fk_schemas          => \@fk_schemas,
                 indexes             => \@indexes,
+                inherits            => \@inherits,
                 permissions         => \@permissions,
             };
 
@@ -1851,7 +1618,7 @@ sub sgml_safe_id($)
 
 #####
 # lower
-#	LowerCase the string
+#    LowerCase the string
 sub lower($)
 {
     my $string = shift;
@@ -1863,7 +1630,7 @@ sub lower($)
 
 #####
 # useUnits
-#	Tack on base 2 metric units
+#    Tack on base 2 metric units
 sub useUnits($)
 {
     my ($value) = @_;
@@ -1884,8 +1651,8 @@ sub useUnits($)
 
 #####
 # docbook
-#	Docbook output is special in that we may or may not want to escape
-#	the characters inside the string depending on a string prefix.
+#    Docbook output is special in that we may or may not want to escape
+#    the characters inside the string depending on a string prefix.
 sub docbook($)
 {
     my $string = shift;
@@ -1913,8 +1680,8 @@ sub docbook($)
 
 #####
 # graphviz
-#	GraphViz output requires that special characters (like " and whitespace) must be preceeded
-#	by a \ when a part of a lable.
+#    GraphViz output requires that special characters (like " and whitespace) must be preceeded
+#    by a \ when a part of a lable.
 sub graphviz($)
 {
     my $string = shift;
@@ -1929,7 +1696,7 @@ sub graphviz($)
 
 #####
 # sql_prettyprint
-#	Clean up SQL into something presentable
+#    Clean up SQL into something presentable
 sub sql_prettyprint($)
 {
     my $string = shift;
@@ -1963,7 +1730,7 @@ sub sql_prettyprint($)
         }
 
         # NOTE: Should we drop leading spaces?
-        #	$elem =~ s/^\s//;
+        #    $elem =~ s/^\s//;
 
         # Close brackets are special
         # Bring depth in a level
@@ -2026,7 +1793,7 @@ sub sql_prettyprint($)
 
 ##
 # triggerError
-#	Print out a supplied error message and exit the script.
+#    Print out a supplied error message and exit the script.
 sub triggerError($)
 {
     my ($error) = @_;
@@ -2062,7 +1829,7 @@ Options:
   -l <path>       Path to the templates (default: @@TEMPLATE-DIR@@)
   -t <output>     Type of output wanted (default: All in template library)
 
-  -s <schema>	  Specify a specific schema to match. Technically this is a regular
+  -s <schema>      Specify a specific schema to match. Technically this is a regular
                   expression but anything other than a specific name may have unusual
                   results.
 

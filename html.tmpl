@@ -1,4 +1,4 @@
-<!-- $Header: /cvsroot/autodoc/autodoc/html.tmpl,v 1.2 2006/02/12 20:27:41 rbt Exp $ -->
+<!-- $Header: /cvsroot/autodoc/autodoc/html.tmpl,v 1.3 2006/02/13 01:15:55 rbt Exp $ -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
    "http://www.w3.org/TR/html4/strict.dtd">
 
@@ -181,6 +181,16 @@
 			 </tr>
             <!-- /TMPL_LOOP name="columns" -->
         </table>
+
+        <!-- Inherits -->
+		<!-- TMPL_IF name="inherits" -->
+        <p>Table <!-- TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="schema" -->.<!-- /TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="table" --> Inherits
+        <!-- TMPL_LOOP name="inherits" -->
+           <!-- TMPL_VAR name="index_name" --> <!-- TMPL_VAR name="index_definition" -->
+           <a href="#<!-- TMPL_VAR ESCAPE="URL" name="parent_sgmlid" -->"><!-- TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="parent_schema" -->.<!-- /TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="parent_table" --></a>, 
+        <!-- /TMPL_LOOP name="inherits" -->
+        </p>
+		<!-- /TMPL_IF name="inherits" -->
 
 		<!-- TMPL_UNLESS name="view_definition" -->
 		<!-- TMPL_IF name="stats_enabled" -->

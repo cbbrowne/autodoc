@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.12 2006/02/13 01:15:55 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.13 2006/03/17 22:32:30 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.30
@@ -550,7 +550,8 @@ sub info_collect($$$$$)
     my $sth_Primary_Keys     = $dbh->prepare($sql_Primary_Keys);
     my $sth_Schema           = $dbh->prepare($sql_Schema);
     my $sth_Tables           = $dbh->prepare($sql_Tables);
-    my $sth_Table_Statistics = $dbh->prepare($sql_Table_Statistics);
+    my $sth_Table_Statistics = $dbh->prepare($sql_Table_Statistics)
+      if ( $statistics == 1 );
 
     # Fetch Database info
     $sth_Database->execute();
@@ -932,7 +933,8 @@ sub info_collect($$$$$)
     $sth_Primary_Keys->finish();
     $sth_Schema->finish();
     $sth_Tables->finish();
-    $sth_Table_Statistics->finish();
+    $sth_Table_Statistics->finish()
+      if ( $statistics == 1 );
 
     $dbh->disconnect;
 

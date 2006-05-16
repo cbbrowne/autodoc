@@ -1,15 +1,16 @@
-<!-- $Header: /cvsroot/autodoc/autodoc/html.tmpl,v 1.3 2006/02/13 01:15:55 rbt Exp $ -->
+<!-- $Header: /cvsroot/autodoc/autodoc/html.tmpl,v 1.4 2006/05/16 19:01:27 rbt Exp $ -->
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
    "http://www.w3.org/TR/html4/strict.dtd">
 
 <html>
   <head>
     <title>Index for <!-- TMPL_VAR ESCAPE="HTML" name="database" --></title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <style type="text/css">
 	BODY {
-		color:	#000000; 
+		color:	#000000;
 		background-color: #FFFFFF;
-		font-family: Helvetica, sans-serif; 
+		font-family: Helvetica, sans-serif;
 	}
 
 	P {
@@ -237,7 +238,7 @@
 		<!-- TMPL_IF name="fk_schemas" -->
 			<p>Tables referencing this one via Foreign Key Constraints:</p>
 		<!-- TMPL_LOOP name="fk_schemas" -->
-			<ul>	
+			<ul>
 				<li><a href="#<!-- TMPL_VAR ESCAPE="URL" name="fk_sgmlid" -->"><!-- TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="fk_schema" -->.<!-- /TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="fk_table" --></a></li>
 			</ul>
 		<!-- /TMPL_LOOP name="fk_schemas" -->
@@ -292,7 +293,7 @@
 	<!-- We've gone through the table structure, now lets take a look at user functions -->
 	<!-- TMPL_LOOP name="functions" -->
 		<hr>
-		<h2>Function: 
+		<h2>Function:
 			<a href="#<!-- TMPL_VAR ESCAPE="HTML" name="schema_sgmlid" -->"><!-- TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="schema" --></a>.<!-- /TMPL_IF name="number_of_schemas" --><a name="<!-- TMPL_VAR ESCAPE="URL" name="function_sgmlid" -->"><!-- TMPL_VAR ESCAPE="HTML" name="function" --></a>
 		</h2>
 <h3>Returns: <!-- TMPL_VAR ESCAPE="HTML" name="function_returns" --></h3>

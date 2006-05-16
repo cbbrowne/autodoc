@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.13 2006/03/17 22:32:30 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.14 2006/05/16 19:01:27 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.30
@@ -210,6 +210,9 @@ sub info_collect($$$$$)
 
     my $dbh = DBI->connect( @{$dbConnect} )
       or triggerError("Unable to connect due to: $DBI::errstr");
+
+    $dbh->do("set client_encoding to 'UTF-8'")
+      or triggerError("could not set client_encoding to UTF-8: $DBI::errstr");
 
     my %struct;
     $db->{$database}{'STRUCT'} = \%struct;

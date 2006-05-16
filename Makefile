@@ -1,4 +1,4 @@
-# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.2 2005/05/01 05:32:48 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.3 2006/05/16 18:57:24 rbt Exp $
 
 TEMPLATES = dia.tmpl dot.tmpl html.tmpl neato.tmpl xml.tmpl zigzag.dia.tmpl
 BINARY = postgresql_autodoc
@@ -40,7 +40,7 @@ $(BINARY): postgresql_autodoc.pl $(CONFIGFILE)
 
 ####
 # INSTALL Target
-.PHONY: install
+.PHONY: install uninstall
 install: all $(ALWAYS_DEPEND)
 	$(INSTALL_SCRIPT) -d $(bindir)
 	$(INSTALL_SCRIPT) -d $(datadir)
@@ -48,6 +48,14 @@ install: all $(ALWAYS_DEPEND)
 	for entry in $(TEMPLATES) ; \
 		do $(INSTALL_SCRIPT) -m 644 $${entry} $(datadir) ; \
 	done
+
+uninstall:
+	-$(RM) $(bindir)/$(BINARY)
+	for entry in $(TEMPLATES) ; \
+		do $(RM) $(datadir)/$${entry} ; \
+	done
+	-rmdir $(datadir)
+	-rmdir $(bindir)
 
 ####
 # CLEAN / DISTRIBUTION-CLEAN / MAINTAINER-CLEAN Targets

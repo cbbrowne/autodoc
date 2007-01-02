@@ -1,3 +1,56 @@
+2007-01-02 08:53  rbt
+
+	* configure.ac, postgresql_autodoc.pl: Toshio Kuratomi wrote a
+	  patch to allow a password to be provided via prompt.
+
+2006-05-16 15:01  rbt
+
+	* html.tmpl, postgresql_autodoc.pl, xml.tmpl: Assume the strings
+	  are in UTF8 instead of in ASCII. This expands on the number of
+	  characters that we can work with. While not perfect, it is an
+	  improvement.
+
+	  Submitted by:   Dirk Jagdmann
+
+2006-05-16 14:58  rbt
+
+	* config.mk.in: The datadir should be
+	  /usr/local/share/postgresql_autodoc by default instead of
+	  /usr/local/share.
+
+	  Submitted by:   Dirk Jagdmann
+
+2006-05-16 14:57  rbt
+
+	* Makefile: Add an uninstall target.
+
+	  Submitted by:   Dirk Jagdmann
+
+2006-03-17 17:32  rbt
+
+	* postgresql_autodoc.pl: Do not prepare() the statistics query if
+	  it is not going to be used.
+
+	  Prepare() and finish() on an empty string causes DBD::Pg to
+	  complain about the finish().
+
+2006-02-12 20:15  rbt
+
+	* html.tmpl, postgresql_autodoc.pl, regressdatabase.sql: Add in
+	  very simple inheritance documentation. Templates other than HTML
+	  need to be updated.
+
+	  Remove support for PostgreSQL 7.1 and 7.2. Continues to support
+	  7.3 and later.
+
+2006-02-12 15:27  rbt
+
+	* html.tmpl: Display index information in HTML output.
+
+2005-05-02 22:18  rbt
+
+	* ChangeLog: Changelog for the 1.25 release.
+
 2005-05-02 22:17  rbt
 
 	* zigzag.dia.tmpl: Prevent Dia 0.94 from crashing by rearranging

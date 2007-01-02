@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.14 2006/05/16 19:01:27 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.15 2007/01/02 13:53:19 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.30
 
 # License
 # -------
-# Copyright (c) 2001-2005, Rod Taylor
+# Copyright (c) 2001-2007, Rod Taylor
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,9 @@ use Fcntl;
 # Allows file templates
 use HTML::Template;
 
+# Allow reading a password from stdin
+use Term::ReadKey;
+
 sub main($)
 {
     my ($ARGV) = @_;
@@ -77,6 +80,9 @@ sub main($)
 
     my $dbport = $ENV{'PGPORT'};
     $dbport ||= "";
+
+    # Determine whether we need a password to connect
+    my $needpass = 0;
 
     my $dbpass               = "";
     my $output_filename_base = $database;
@@ -138,6 +144,12 @@ sub main($)
                 last;
             };
 
+            # Make sure we get a password before attempting to conenct
+            /^--password$/ && do {
+                $needpass = 1;
+                last;
+            };
+
             # Set the base of the filename. The extensions pulled
             # from the templates will be appended to this name
             /^-f$/ && do {
@@ -185,6 +197,17 @@ No arguments set.  Use '$basename --help' for help
 Connecting to database '$database' as user '$dbuser'
 Msg
           ;
+    }
+
+    # If needpass has been set but no password was provided, prompt the user
+    # for a password.
+    if ($needpass and not $dbpass) {
+        print "Password: ";
+        ReadMode 'noecho';
+        $dbpass = ReadLine 0;
+        chomp $dbpass;
+        ReadMode 'normal';
+        print "\n";
     }
 
     # Database Connection
@@ -1830,6 +1853,7 @@ Options:
   -p <port>       Specify database server port (default: 5432)
   -u <username>   Specify database username (default: $dbuser)
   --password=<pw> Specify database password (default: blank)
+  --password      Have $basename prompt for a password
 
   -l <path>       Path to the templates (default: @@TEMPLATE-DIR@@)
   -t <output>     Type of output wanted (default: All in template library)

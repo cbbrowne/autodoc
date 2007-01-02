@@ -1,5 +1,5 @@
 AC_PREREQ(2.53)
-AC_REVISION($Header: /cvsroot/autodoc/autodoc/Attic/configure.ac,v 1.1 2004/05/12 16:00:34 rbt Exp $)
+AC_REVISION($Header: /cvsroot/autodoc/autodoc/Attic/configure.ac,v 1.2 2007/01/02 13:53:19 rbt Exp $)
 AC_INIT(postgresql_autodoc.pl)
 
 
@@ -37,9 +37,10 @@ AC_SUBST(PERL)
 #	DBD::Pg
 #	Fcntl
 #	HTML::Template
+#	Term::ReadKey
 #
 # Output of if test redirected to /dev/null to keep quiet
-for module in DBI DBD::Pg Fcntl HTML::Template ; do
+for module in DBI DBD::Pg Fcntl HTML::Template Term::ReadKey ; do
 	AC_MSG_CHECKING(${module})
 	if [ ! (${PERL} -e "use ${module}" 2>&1 /dev/null ) ]; then
 		AC_MSG_RESULT(no)

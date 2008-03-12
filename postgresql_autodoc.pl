@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.18 2008/03/12 18:50:19 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.19 2008/03/12 18:55:11 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.31
@@ -1544,10 +1544,10 @@ sub write_using_templates($$$$$) {
                         {
                             $ref_con =
                               $struct->{$ref_schema}{'TABLE'}{$ref_table}
-                              {'COLUMN'}{$ref_column}{'ORDER'};
+                              {'COLUMN'}{$ref_column}{'ORDER'} || 0;
                             $key_con =
                               $struct->{$schema}{'TABLE'}{$table}{'COLUMN'}
-                              {$column}{'ORDER'};
+                              {$column}{'ORDER'} || 0;
                             $keycon_offset = 1;
                         }
 

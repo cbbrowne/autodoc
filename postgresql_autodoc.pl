@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.20 2008/03/12 19:00:31 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.21 2008/03/12 19:00:56 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.31
@@ -180,15 +180,15 @@ sub main($) {
             # One might dump a table's set (comma-separated) or just one
             # If dumping a set of specific tables do NOT dump out the functions
             # in this database. Generates noise in the output
-            # that most likely isn't wanted. Check for $table_out around the 
+            # that most likely isn't wanted. Check for $table_out around the
             # function gathering location.
             /^--table=/ && do {
-                my $some_table = $ARGV[ $i ];
-                $some_table =~ s/^--table=//g ;
+                my $some_table = $ARGV[$i];
+                $some_table =~ s/^--table=//g;
 
-                my @tables_in = split(',',$some_table);
+                my @tables_in = split( ',', $some_table );
                 sub single_quote;
-                    $table_out =  join(',',map(single_quote,@tables_in));
+                $table_out = join( ',', map( single_quote, @tables_in ) );
 
                 last;
             };
@@ -245,7 +245,8 @@ Msg
 #
 # Pull out all of the applicable information about a specific database
 sub info_collect {
-    my ( $dbConnect, $db, $database, $only_schema, $statistics, $table_out ) = @_;
+    my ( $dbConnect, $db, $database, $only_schema, $statistics, $table_out ) =
+      @_;
 
     my $dbh = DBI->connect( @{$dbConnect} )
       or triggerError("Unable to connect due to: $DBI::errstr");
@@ -914,7 +915,8 @@ sub info_collect {
 
     # Function Handling
     $sth_Function->execute();
-    while ( my $functions = $sth_Function->fetchrow_hashref and not $table_out) {
+    while ( my $functions = $sth_Function->fetchrow_hashref and not $table_out )
+    {
         my $functionname = $functions->{'function_name'} . '( ';
         my $schema       = $functions->{'namespace'};
         my $comment      = $functions->{'comment'};
@@ -1892,7 +1894,8 @@ USAGE
       ;
     exit 1;
 }
-sub single_quote{
+
+sub single_quote {
     my $attr = $_;
     $attr =~ s/^\s+|\s+$//g;
     return qq{'$attr'};

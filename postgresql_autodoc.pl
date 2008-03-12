@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.17 2008/03/12 18:24:12 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.18 2008/03/12 18:50:19 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.31
@@ -92,6 +92,8 @@ sub main($) {
 
     my $only_schema;
 
+    my $table_out;
+
     my $wanted_output = undef;    # means all types
 
     my $statistics = 0;
@@ -175,6 +177,17 @@ sub main($) {
                 last;
             };
 
+            # One might dump a table's set (comma-separated) or just one
+            /^--table=/ && do {
+                my $some_table = $ARGV[ $i ];
+                $some_table =~ s/^--table=//g ;
+
+                my @tables_in = split(',',$some_table);
+                sub single_quote;
+                    $table_out =  join(',',map(single_quote,@tables_in));
+                last;
+            };
+
             # Check to see if Statistics have been requested
             /^--statistics$/ && do {
                 $statistics = 1;
@@ -215,7 +228,7 @@ Msg
     $dsn .= ";port=$dbport" if ( "$dbport" ne "" );
 
     info_collect( [ $dsn, $dbuser, $dbpass ],
-        \%db, $database, $only_schema, $statistics );
+        \%db, $database, $only_schema, $statistics, $table_out );
 
     # Write out *ALL* templates
     write_using_templates( \%db, $database, $statistics, $template_path,
@@ -226,8 +239,8 @@ Msg
 # info_collect
 #
 # Pull out all of the applicable information about a specific database
-sub info_collect($$$$$) {
-    my ( $dbConnect, $db, $database, $only_schema, $statistics ) = @_;
+sub info_collect {
+    my ( $dbConnect, $db, $database, $only_schema, $statistics, $table_out ) = @_;
 
     my $dbh = DBI->connect( @{$dbConnect} )
       or triggerError("Unable to connect due to: $DBI::errstr");
@@ -307,8 +320,9 @@ sub info_collect($$$$$) {
          JOIN pg_catalog.pg_namespace ON (relnamespace = pg_namespace.oid)
         WHERE relkind IN ('r', 's', 'v')
           AND nspname !~ '$system_schema_list'
-          AND nspname ~ '$schemapattern';
+          AND nspname ~ '$schemapattern' 
     };
+    $sql_Tables .= qq{ AND relname IN ($table_out)} if defined($table_out);
 
     # - uses pg_class.oid
     my $sql_Columns = q{
@@ -657,7 +671,7 @@ sub info_collect($$$$$) {
         }
 
         # Primitive Stats, but only if requested
-        if ( $statistics == 1 ) {
+        if ( $statistics == 1 and $tables->{'reltype'} eq 'table' ) {
             $sth_Table_Statistics->execute($reloid);
 
             my $stats = $sth_Table_Statistics->fetchrow_hashref;
@@ -1862,6 +1876,8 @@ Options:
   -s <schema>      Specify a specific schema to match. Technically this is a regular
                   expression but anything other than a specific name may have unusual
                   results.
+  --table=<args>  Tables to export. Multiple tables may be provided using a
+                  comma-separated list.
 
   --statistics    In 7.4 and later, with the contrib module pgstattuple installed we
                   can gather statistics on the tables in the database 
@@ -1870,6 +1886,11 @@ Options:
 USAGE
       ;
     exit 1;
+}
+sub single_quote{
+    my $attr = $_;
+    $attr =~ s/^\s+|\s+$//g;
+    return qq{'$attr'};
 }
 
 ##

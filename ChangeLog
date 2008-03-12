@@ -1,3 +1,17 @@
+2008-03-12 14:21  rbt
+
+	* postgresql_autodoc.pl: New versions of DBD::Pg like to return an
+	  array reference instead of the special text string that
+	  PostgreSQL returns.
+
+	  This might take care of the issue, although only partially tested
+	  (FreeBSD ports doesn't have the newer version yet as it breaks a
+	  number of applications).
+
+2007-01-02 09:44  rbt
+
+	* ChangeLog: Release 1.30
+
 2007-01-02 08:53  rbt
 
 	* configure.ac, postgresql_autodoc.pl: Toshio Kuratomi wrote a

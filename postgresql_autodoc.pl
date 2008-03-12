@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.19 2008/03/12 18:55:11 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.20 2008/03/12 19:00:31 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.31
@@ -178,6 +178,10 @@ sub main($) {
             };
 
             # One might dump a table's set (comma-separated) or just one
+            # If dumping a set of specific tables do NOT dump out the functions
+            # in this database. Generates noise in the output
+            # that most likely isn't wanted. Check for $table_out around the 
+            # function gathering location.
             /^--table=/ && do {
                 my $some_table = $ARGV[ $i ];
                 $some_table =~ s/^--table=//g ;
@@ -185,6 +189,7 @@ sub main($) {
                 my @tables_in = split(',',$some_table);
                 sub single_quote;
                     $table_out =  join(',',map(single_quote,@tables_in));
+
                 last;
             };
 
@@ -909,7 +914,7 @@ sub info_collect {
 
     # Function Handling
     $sth_Function->execute();
-    while ( my $functions = $sth_Function->fetchrow_hashref ) {
+    while ( my $functions = $sth_Function->fetchrow_hashref and not $table_out) {
         my $functionname = $functions->{'function_name'} . '( ';
         my $schema       = $functions->{'namespace'};
         my $comment      = $functions->{'comment'};

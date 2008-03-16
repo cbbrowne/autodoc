@@ -1,3 +1,48 @@
+2008-03-12 15:00  rbt
+
+	* postgresql_autodoc.pl: Clean up formatting.
+
+2008-03-12 15:00  rbt
+
+	* postgresql_autodoc.pl: Do not output all functions in the
+	  database if a specific table list was requested. Good chance it
+	  isn't functions the user is after.
+
+2008-03-12 14:55  rbt
+
+	* postgresql_autodoc.pl: Keep foreign key defaults (0) when
+	  referencing a table which does not exist in our output.
+
+2008-03-12 14:50  rbt
+
+	* postgresql_autodoc.pl: Leonardo Cezar patches:
+
+	  One of them to fix a odd behavior when we had views in schema to
+	  schema to extract some reporter.  Previously we got an error on
+	  trying to get statistcs from a view, since views hasn't stats.
+
+	  The other one to choose which table(s) we want to collect
+	  information with --table=foo,bar,x ... option.
+
+	  Although it's functional we still get warning when dealing with
+	  table FKs that weren't selected together; among others gotchas
+	  ;-).
+
+	  Unfortunately I didn't find any mailing lists or forum to treat
+	  this issue neither at pgfoundry nor autodoc's website.  --
+
+	  FKeys still unfixed.	Statistics portion cleaned up by me.
+	  Virtually no testing of input for comma separated values but oh
+	  well.
+
+	  Will follow with a fix to all the "gotchas"
+
+2008-03-12 14:24  rbt
+
+	* ChangeLog, postgresql_autodoc.pl: Tag for 1.31 release. After
+	  additional testing to ensure Foriegn Keys work again this is what
+	  will go out.
+
 2008-03-12 14:21  rbt
 
 	* postgresql_autodoc.pl: New versions of DBD::Pg like to return an

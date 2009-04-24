@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.24 2009/04/24 04:41:53 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.25 2009/04/24 04:43:32 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.31
@@ -1854,7 +1854,7 @@ Options:
   -m <regexp>     Show only tables/objects with names matching the specified regular expression.
 
   --table=<args>  Tables to export. Multiple tables may be provided using a
-                  comma-separated list.
+                  comma-separated list. I.e. table,table2,table3
 
   --statistics    In 7.4 and later, with the contrib module pgstattuple installed we
                   can gather statistics on the tables in the database 

@@ -1,13 +1,13 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.21 2008/03/12 19:00:56 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.22 2009/04/24 04:04:27 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.31
 
 # License
 # -------
-# Copyright (c) 2001-2007, Rod Taylor
+# Copyright (c) 2001-2009, Rod Taylor
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -926,12 +926,7 @@ sub info_collect {
 
         # Pre-setup argument names when available.
         my $argnames = $functions->{'function_arg_names'};
-        my @names;
-
-        if ( defined($argnames) ) {
-            $argnames =~ s/{(.*)}/$1/;
-            @names = split( ',', $argnames );
-        }
+        my @names = $argnames ? @{$argnames} : ();
 
         # Setup full argument types -- including the name prefix
         foreach my $type (@types) {
@@ -943,7 +938,7 @@ sub info_collect {
                 $functionname .= ', ';
             }
 
-            if ( scalar(@names) > 0 ) {
+            if ( scalar(@names) > 0 and $names[$count] ) {
                 $functionname .= $names[$count] . ' ';
             }
 

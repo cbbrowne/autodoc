@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.23 2009/04/24 04:21:40 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.24 2009/04/24 04:41:53 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.31
@@ -91,6 +91,7 @@ sub main($) {
     my $fileisset = 0;
 
     my $only_schema;
+    my $only_matching;
 
     my $table_out;
 
@@ -177,6 +178,12 @@ sub main($) {
                 last;
             };
 
+            # User has requested only tables/objects matching a pattern
+            /^(-m|--matching)$/ && do {
+                $only_matching = $ARGV[ ++$i ];
+                last;
+            };
+
             # One might dump a table's set (comma-separated) or just one
             # If dumping a set of specific tables do NOT dump out the functions
             # in this database. Generates noise in the output
@@ -233,20 +240,22 @@ Msg
     $dsn .= ";port=$dbport" if ( "$dbport" ne "" );
 
     info_collect( [ $dsn, $dbuser, $dbpass ],
-        \%db, $database, $only_schema, $statistics, $table_out );
+        \%db, $database, $only_schema, $only_matching, $statistics,
+        $table_out );
 
     # Write out *ALL* templates
     write_using_templates( \%db, $database, $statistics, $template_path,
         $output_filename_base, $wanted_output );
-} ## end sub main($)
+}
 
 ##
 # info_collect
 #
 # Pull out all of the applicable information about a specific database
 sub info_collect {
-    my ( $dbConnect, $db, $database, $only_schema, $statistics, $table_out ) =
-      @_;
+    my ( $dbConnect, $db, $database, $only_schema, $only_matching, $statistics,
+        $table_out )
+      = @_;
 
     my $dbh = DBI->connect( @{$dbConnect} )
       or triggerError("Unable to connect due to: $DBI::errstr");
@@ -281,6 +290,12 @@ sub info_collect {
       'pg_catalog|pg_toast|pg_temp_[0-9]+|information_schema';
     if ( defined($only_schema) ) {
         $schemapattern = '^' . $only_schema . '$';
+    }
+
+    # and only objects matching the specified pattern, if any
+    my $matchpattern = '';
+    if ( defined($only_matching) ) {
+        $matchpattern = $only_matching;
     }
 
     #
@@ -325,6 +340,7 @@ sub info_collect {
          FROM pg_catalog.pg_class
          JOIN pg_catalog.pg_namespace ON (relnamespace = pg_namespace.oid)
         WHERE relkind IN ('r', 's', 'v')
+          AND relname ~ '$matchpattern'
           AND nspname !~ '$system_schema_list'
           AND nspname ~ '$schemapattern' 
     };
@@ -489,7 +505,7 @@ sub info_collect {
     };
 
     # Fetch CHECK constraints
-	my $sql_Constraint;
+    my $sql_Constraint;
     $sql_Constraint = q{
        SELECT pg_get_constraintdef(oid) AS constraint_source
             , conname AS constraint_name
@@ -517,6 +533,7 @@ sub info_collect {
          JOIN pg_catalog.pg_type ON (prorettype = pg_type.oid)
         WHERE pg_namespace.nspname !~ '$system_schema_list'
           AND pg_namespace.nspname ~ '$schemapattern'
+          AND proname ~ '$matchpattern'
           AND proname != 'plpgsql_call_handler';
     };
 
@@ -884,15 +901,15 @@ sub info_collect {
         my $argnames = $functions->{'function_arg_names'};
 
         # Setup full argument types including the parameter name
-		my @parameters;
+        my @parameters;
         for my $type (@types) {
             $sth_FunctionArg->execute($type);
 
             my $hash = $sth_FunctionArg->fetchrow_hashref;
 
-			my $parameter = '';
-            if ( $argnames) {
-                $parameter .= sprintf('%s ', pop(@{$argnames}));
+            my $parameter = '';
+            if ($argnames) {
+                $parameter .= sprintf( '%s ', pop( @{$argnames} ) );
             }
 
             if ( $hash->{'namespace'} ne $system_schema ) {
@@ -900,9 +917,11 @@ sub info_collect {
             }
             $parameter .= $hash->{'type_name'};
 
-			push(@parameters, $parameter);
+            push( @parameters, $parameter );
         }
-		my $functionname = sprintf('%s(%s)', $functions->{'function_name'}, join(', ', @parameters));
+        my $functionname = sprintf( '%s(%s)',
+            $functions->{'function_name'},
+            join( ', ', @parameters ) );
 
         my $ret_type = $functions->{'returns_set'} ? 'SET OF ' : '';
         $sth_FunctionArg->execute( $functions->{'return_type'} );
@@ -943,7 +962,7 @@ sub info_collect {
 
     $dbh->disconnect;
 
-} ## end sub info_collect($$$$$)
+}
 
 #####
 # write_using_templates
@@ -1599,7 +1618,7 @@ sub write_using_templates($$$$$) {
           or die "Can't open $output_filename: $!";
         print FH $template->output();
     }
-} ## end sub write_using_templates($$$$$)
+}
 
 ######
 # sgml_safe_id
@@ -1789,7 +1808,7 @@ sub sql_prettyprint($) {
     }
 
     return $result;
-} ## end sub sql_prettyprint($)
+}
 
 ##
 # triggerError
@@ -1831,6 +1850,9 @@ Options:
   -s <schema>     Specify a specific schema to match. Technically this is a regular
                   expression but anything other than a specific name may have unusual
                   results.
+
+  -m <regexp>     Show only tables/objects with names matching the specified regular expression.
+
   --table=<args>  Tables to export. Multiple tables may be provided using a
                   comma-separated list.
 

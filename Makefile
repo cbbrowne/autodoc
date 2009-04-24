@@ -1,87 +1,51 @@
-# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.3 2006/05/16 18:57:24 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.4 2009/04/24 03:46:28 rbt Exp $
 
+# install configuration
+DESTDIR =
+PREFIX = /usr/local
+BINDIR = ${PREFIX}/bin
+DATADIR = ${PREFIX}/share/postgresql_autodoc
+
+# build configuration
 TEMPLATES = dia.tmpl dot.tmpl html.tmpl neato.tmpl xml.tmpl zigzag.dia.tmpl
 BINARY = postgresql_autodoc
-CONFIGFILE = config.mk
+SOURCE = ${BINARY}.pl
+RELEASE_FILES =	${SOURCE} ${TEMPLATES}
 
-RELEASE_FILES = Makefile config.mk.in configure \
-				configure.ac $(TEMPLATES) install-sh \
-				postgresql_autodoc.pl
-
-cur-dir   := $(shell basename ${PWD})
-REAL_RELEASE_FILES = $(addprefix $(cur-dir)/,$(RELEASE_FILES))
-
-# Global dependencies
-ALWAYS_DEPEND = Makefile configure $(CONFIGFILE)
+# system tools
+INSTALL_SCRIPT = $$(which install) -c
+PERL = $$(which perl)
+SED = $$(which sed)
 
 
-####
-# Test to see if $(CONFIGFILE) has been generated.  If so, include it. Otherwise we assume
-# it will be created for us.
-has_configmk := $(wildcard $(CONFIGFILE))
+all: ${BINARY}
 
-ifeq ($(has_configmk),$(CONFIGFILE))
-include $(CONFIGFILE)
-endif
+${BINARY}: ${SOURCE}
+	${SED} -e "s,/usr/bin/env perl,${PERL}," \
+			-e "s,@@TEMPLATE-DIR@@,${DATADIR}," \
+		 ${SOURCE} > ${BINARY}
+	-chmod +x ${BINARY}
 
-####
-# ALL
-.PHONY: all
-all: $(ALWAYS_DEPEND) $(BINARY)
-
-####
-# Replace the /usr/bin/env perl with the supplied path
-# chmod to make testing easier
-$(BINARY): postgresql_autodoc.pl $(CONFIGFILE)
-	$(SED) -e "s,/usr/bin/env perl,$(PERL)," \
-			-e "s,@@TEMPLATE-DIR@@,$(datadir)," \
-		 postgresql_autodoc.pl > $(BINARY)
-	-chmod +x $(BINARY)
-
-####
-# INSTALL Target
-.PHONY: install uninstall
-install: all $(ALWAYS_DEPEND)
-	$(INSTALL_SCRIPT) -d $(bindir)
-	$(INSTALL_SCRIPT) -d $(datadir)
-	$(INSTALL_SCRIPT) -m 755 $(BINARY) $(bindir)
-	for entry in $(TEMPLATES) ; \
-		do $(INSTALL_SCRIPT) -m 644 $${entry} $(datadir) ; \
+install: all
+	${INSTALL_SCRIPT} -d ${DESTDIR}${BINDIR}
+	${INSTALL_SCRIPT} -d ${DESTDIR}${DATADIR}
+	${INSTALL_SCRIPT} -m 755 ${BINARY} ${DESTDIR}${BINDIR}
+	for entry in ${TEMPLATES} ; \
+		do ${INSTALL_SCRIPT} -m 644 $${entry} ${DESTDIR}${DATADIR} ; \
 	done
 
 uninstall:
-	-$(RM) $(bindir)/$(BINARY)
-	for entry in $(TEMPLATES) ; \
-		do $(RM) $(datadir)/$${entry} ; \
+	-rm ${DESTDIR}${BINDIR}/${BINARY}
+	-for entry in ${TEMPLATES} ; \
+		do rm ${DESTDIR}${DATADIR}/$${entry} ; \
 	done
-	-rmdir $(datadir)
-	-rmdir $(bindir)
+	-rmdir ${DESTDIR}${DATADIR}
+	-rmdir ${DESTDIR}${BINDIR}
 
-####
-# CLEAN / DISTRIBUTION-CLEAN / MAINTAINER-CLEAN Targets
-.PHONY: clean
-clean: $(ALWAYS_DEPEND)
-	$(RM) $(BINARY)
+clean:
+	rm -f ${BINARY}
 
-.PHONY: distribution-clean distclean
-distribution-clean distclean: clean
-	$(RM) $(CONFIGFILE) config.log config.status
-	$(RM) -r autom4te.cache
-	$(RM) $(patsubst %.tmpl,*.%,$(wildcard *.tmpl))
-
-.PHONY: maintainer-clean
-maintainer-clean: distribution-clean
-	$(RM) configure
-
-####
-# Build a release
-#
-#	Clean
-#	Ensure configure is up to date
-#	Commit any pending elements
-#	Tar up the results
-.PHONY: release
-release: distribution-clean configure $(RELEASE_FILES)
+release: clean ${RELEASE_FILES}
 	@if [ -z ${VERSION} ] ; then \
 		echo "-------------------------------------------"; \
 		echo "VERSION needs to be specified for a release"; \
@@ -90,14 +54,7 @@ release: distribution-clean configure $(RELEASE_FILES)
 	fi
 	cvs2cl
 	-cvs commit
-	cd ../ && tar -czvf postgresql_autodoc-${VERSION}.tar.gz $(REAL_RELEASE_FILES)
+	dir=$${pwd) && cd .. && tar -czvf postgresql_autodoc-${VERSION}.tar.gz \
+		-C $${dir} ${RELEASE_FILES}
 
-####
-# Build and Run configure files when configure or a template is updated.
-configure: configure.ac
-	autoconf
-
-# Fix my makefile, then execute myself
-$(CONFIGFILE) : config.mk.in configure
-	./configure
-	$(MAKE) $(MAKEFLAGS)
+.PHONY: install uninstall clean release

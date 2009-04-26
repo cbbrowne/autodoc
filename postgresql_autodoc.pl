@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.25 2009/04/24 04:43:32 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.26 2009/04/26 17:01:57 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.31
@@ -317,9 +317,6 @@ sub info_collect {
        SELECT nspname as namespace
             , relname as tablename
             , pg_catalog.pg_get_userbyid(relowner) AS tableowner
-            , relhasindex as hasindexes
-            , relhasrules as hasrules
-            , reltriggers as hastriggers
             , pg_class.oid
             , pg_catalog.obj_description(pg_class.oid, 'pg_class') as table_description
             , relacl

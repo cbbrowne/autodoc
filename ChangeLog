@@ -1,3 +1,56 @@
+2009-04-26 13:01  rbt
+
+	* postgresql_autodoc.pl: Don't need relhasindexes, relhasrules, or
+	  relhastriggers since older DBs have been dropped. This also makes
+	  up 8.4 compatible without additional changes required.
+
+2009-04-24 00:43  rbt
+
+	* postgresql_autodoc.pl: Improve wording for --table help (Jamie
+	  Nicholson)
+
+2009-04-24 00:41  rbt
+
+	* postgresql_autodoc.pl: Add -m <regex> to only output structures
+	  or functions matching a specific regex (Simon Michael)
+
+	  Tidy code along the way.
+
+2009-04-24 00:21  rbt
+
+	* postgresql_autodoc.pl: Remove support for PostgreSQL versions
+	  earlier than 8.0.
+
+	  Do a better job of named function parameters.
+
+2009-04-24 00:04  rbt
+
+	* postgresql_autodoc.pl: Minor fixes for named functions for newer
+	  DBD::Pg's. A long time ago DBD::Pg changed from returning an
+	  array string to returning an actual array for PostgreSQL arrays.
+	  Autodoc did not take this into account.
+
+2009-04-23 23:46  rbt
+
+	* Makefile, config.mk.in, configure.ac: Dramatically simplify
+	  installation process (Thanks Simon Bertrang).
+
+	  Complex installation checks have never been required so drop it
+	  and replace with simple make functionality.
+
+	  Targetting to a different installation prefix is done by setting
+	  the PREFIX variable:
+
+	  make PREFIX=/some/new/home install
+
+2009-04-23 23:39  rbt
+
+	* config.mk.in: Use datarootdir instead of datadir
+
+2008-03-16 19:30  rbt
+
+	* ChangeLog: 1.31 actual
+
 2008-03-12 15:00  rbt
 
 	* postgresql_autodoc.pl: Clean up formatting.

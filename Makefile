@@ -1,4 +1,4 @@
-# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.6 2009/05/01 02:14:29 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.7 2009/05/01 02:31:10 rbt Exp $
 
 # install configuration
 DESTDIR =
@@ -6,11 +6,13 @@ PREFIX = /usr/local
 BINDIR = ${PREFIX}/bin
 DATADIR = ${PREFIX}/share/postgresql_autodoc
 
+
 # build configuration
 TEMPLATES = dia.tmpl dot.tmpl html.tmpl neato.tmpl xml.tmpl zigzag.dia.tmpl
 BINARY = postgresql_autodoc
 SOURCE = ${BINARY}.pl
-RELEASE_FILES =	${SOURCE} ${TEMPLATES}
+RELEASE_FILES = Makefile ChangeLog ${SOURCE} ${TEMPLATES}
+RELEASE_DIR=postgresql_autodoc
 
 # system tools
 INSTALL_SCRIPT = $$(which install) -c
@@ -54,7 +56,7 @@ release: clean ${RELEASE_FILES}
 	fi
 	cvs2cl
 	-cvs commit
-	dir=`pwd` && cd .. && tar -czvf postgresql_autodoc-${VERSION}.tar.gz \
-		-C $${dir} ${RELEASE_FILES}
+	mkdir ${RELEASE_DIR} && cp ${RELEASE_FILES} ${RELEASE_DIR} && tar -czvf ${RELEASE_DIR}-${VERSION}.tar.gz ${RELEASE_DIR}
+	rm -r ${RELEASE_DIR}
 
 .PHONY: install uninstall clean release

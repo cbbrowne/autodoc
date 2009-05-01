@@ -1,3 +1,9 @@
+2009-04-30 22:31  rbt
+
+	* ChangeLog, Makefile: Seems tar on FreeBSD has changed behaviour
+	  since the last release. Copy files to new location and build
+	  tarball out of that directory.
+
 2009-04-30 22:14  rbt
 
 	* ChangeLog, Makefile: Really fix the release process.

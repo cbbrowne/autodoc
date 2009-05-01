@@ -1,3 +1,11 @@
+2009-04-30 22:10  rbt
+
+	* Makefile: make release was broken.
+
+2009-04-30 22:09  rbt
+
+	* ChangeLog: Release notes for 1.40
+
 2009-04-26 13:01  rbt
 
 	* postgresql_autodoc.pl: Don't need relhasindexes, relhasrules, or

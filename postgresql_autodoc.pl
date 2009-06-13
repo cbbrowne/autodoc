@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.27 2009/05/01 02:13:59 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.28 2009/06/13 11:06:55 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.40
@@ -1830,7 +1830,7 @@ sub usage($$$) {
     my ( $basename, $database, $dbuser ) = @_;
     print <<USAGE
 Usage:
-  $basename [options] [dbname [username]]
+  $basename [options]
 
 Options:
   -d <dbname>     Specify database name to connect to (default: $database)

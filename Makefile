@@ -1,16 +1,19 @@
-# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.7 2009/05/01 02:31:10 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.8 2009/08/07 02:48:26 rbt Exp $
 
 # install configuration
 DESTDIR =
 PREFIX = /usr/local
 BINDIR = ${PREFIX}/bin
 DATADIR = ${PREFIX}/share/postgresql_autodoc
+MANDIR = ${PREFIX}/share/man/man1
 
 
 # build configuration
 TEMPLATES = dia.tmpl dot.tmpl html.tmpl neato.tmpl xml.tmpl zigzag.dia.tmpl
 BINARY = postgresql_autodoc
 SOURCE = ${BINARY}.pl
+MANPAGE = ${BINARY}.1
+MANPAGE_SOURCE = ${MANPAGE}.in
 RELEASE_FILES = Makefile ChangeLog ${SOURCE} ${TEMPLATES}
 RELEASE_DIR=postgresql_autodoc
 
@@ -20,7 +23,12 @@ PERL = $$(which perl)
 SED = $$(which sed)
 
 
-all: ${BINARY}
+all: ${BINARY} ${MANPAGE}
+
+${MANPAGE}: ${MANPAGE_SOURCE}
+	${SED} -e "s,@@TEMPLATE-DIR@@,${DATADIR}," \
+		${MANPAGE_SOURCE} > ${MANPAGE}
+
 
 ${BINARY}: ${SOURCE}
 	${SED} -e "s,/usr/bin/env perl,${PERL}," \
@@ -31,16 +39,20 @@ ${BINARY}: ${SOURCE}
 install: all
 	${INSTALL_SCRIPT} -d ${DESTDIR}${BINDIR}
 	${INSTALL_SCRIPT} -d ${DESTDIR}${DATADIR}
+	${INSTALL_SCRIPT} -d ${DESTDIR}${MANDIR}
 	${INSTALL_SCRIPT} -m 755 ${BINARY} ${DESTDIR}${BINDIR}
 	for entry in ${TEMPLATES} ; \
 		do ${INSTALL_SCRIPT} -m 644 $${entry} ${DESTDIR}${DATADIR} ; \
 	done
+	${INSTALL_SCRIPT} ${MANPAGE} ${DESTDIR}${MANDIR}
 
 uninstall:
 	-rm ${DESTDIR}${BINDIR}/${BINARY}
 	-for entry in ${TEMPLATES} ; \
 		do rm ${DESTDIR}${DATADIR}/$${entry} ; \
 	done
+	-rm ${DESTDIR}${MANDIR}/${MANPAGE}
+	-rmdir ${DESTDIR}${MANDIR}
 	-rmdir ${DESTDIR}${DATADIR}
 	-rmdir ${DESTDIR}${BINDIR}
 

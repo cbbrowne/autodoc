@@ -1,4 +1,4 @@
-# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.8 2009/08/07 02:48:26 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/Makefile,v 1.9 2009/08/11 18:50:02 rbt Exp $
 
 # install configuration
 DESTDIR =
@@ -14,7 +14,7 @@ BINARY = postgresql_autodoc
 SOURCE = ${BINARY}.pl
 MANPAGE = ${BINARY}.1
 MANPAGE_SOURCE = ${MANPAGE}.in
-RELEASE_FILES = Makefile ChangeLog ${SOURCE} ${TEMPLATES}
+RELEASE_FILES = Makefile ChangeLog ${SOURCE} ${TEMPLATES} ${MANPAGE}
 RELEASE_DIR=postgresql_autodoc
 
 # system tools

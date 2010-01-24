@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.28 2009/06/13 11:06:55 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.29 2010/01/24 20:01:07 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
 # Postgres Auto-Doc Version 1.40
@@ -906,7 +906,7 @@ sub info_collect {
 
             my $parameter = '';
             if ($argnames) {
-                $parameter .= sprintf( '%s ', pop( @{$argnames} ) );
+                $parameter .= sprintf( '%s ', shift( @{$argnames} ) );
             }
 
             if ( $hash->{'namespace'} ne $system_schema ) {

@@ -1,9 +1,9 @@
 #!/usr/bin/env perl
 # -- # -*- Perl -*-w
-# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.29 2010/01/24 20:01:07 rbt Exp $
+# $Header: /cvsroot/autodoc/autodoc/postgresql_autodoc.pl,v 1.30 2012/01/05 15:30:33 rbt Exp $
 #  Imported 1.22 2002/02/08 17:09:48 into sourceforge
 
-# Postgres Auto-Doc Version 1.40
+# Postgres Auto-Doc Version 1.41
 
 # License
 # -------

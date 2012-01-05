@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!-- $Header: /cvsroot/autodoc/autodoc/xml.tmpl,v 1.2 2006/05/16 19:01:27 rbt Exp $ -->
-
+<!-- $Header: /cvsroot/autodoc/autodoc/xml.tmpl,v 1.3 2012/01/05 15:22:28 rbt Exp $ -->
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % myent SYSTEM "entities.ent">
+%myent;
+]>
 <book id="database.<!-- TMPL_VAR name="database_sgmlid" -->" xreflabel="<!-- TMPL_VAR name="database_dbk" --> database schema"><title><!-- TMPL_VAR name="database_dbk" --> Model</title>
 
 <!-- TMPL_IF name="database_comment" -->
@@ -18,9 +22,10 @@
                xreflabel="<!-- TMPL_VAR name="schema_dbk" -->.<!-- TMPL_VAR name="table_dbk" -->">
         <title id="<!-- TMPL_VAR name="table_sgmlid" -->-title">
          <!-- TMPL_IF name="view_definition" -->View:
+         <database class="table"><!-- TMPL_VAR name="table_dbk" --></database>
          <!-- TMPL_ELSE -->Table:
+         <database class="view"><!-- TMPL_VAR name="table_dbk" --></database>
          <!-- /TMPL_IF name="view_definition" -->
-         <structname><!-- TMPL_VAR name="table_dbk" --></structname>
         </title>
  
 <!-- TMPL_IF name="table_comment" -->
@@ -32,27 +37,26 @@
         <para>
           <variablelist>
             <title>
-              Structure of <structname><!-- TMPL_VAR name="table_dbk" --></structname>
+              Structure of <database class="table"><!-- TMPL_VAR name="table_dbk" --></database>
             </title>
 
 <!-- TMPL_LOOP name="columns" -->
             <varlistentry>
-              <term><structfield><!-- TMPL_VAR name="column_dbk" --></structfield></term>
+              <term><database class="field"><!-- TMPL_VAR name="column_dbk" --></database></term>
               <listitem><para>
-                <type><!-- TMPL_VAR name="column_type_dbk" --></type>
+                <database class="datatype"><!-- TMPL_VAR name="column_type_dbk" --></database>
 <!-- TMPL_LOOP name="column_constraints" -->
 <!-- TMPL_IF name="column_primary_key" -->
-                <literal>PRIMARY KEY</literal>
-
+                <database class="constraint">PRIMARY KEY</database>
 <!-- /TMPL_IF name="column_primary_key" -->
 
 <!-- TMPL_IF name="column_unique" -->
-                      <literal>UNIQUE<!-- TMPL_IF name="column_unique_keygroup" -->#<!-- TMPL_VAR name="column_unique_keygroup" --><!-- /TMPL_IF name="column_unique_keygroup" --></literal>
+                <database class="constraint">UNIQUE<!-- TMPL_IF name="column_unique_keygroup" -->#<!-- TMPL_VAR name="column_unique_keygroup" --><!-- /TMPL_IF name="column_unique_keygroup" --></database>
 <!-- /TMPL_IF name="column_unique" -->
 <!-- /TMPL_LOOP name="column_constraints" -->
 
 <!-- TMPL_IF name="column_constraint_notnull" -->
-                <literal>NOT NULL</literal>
+                <database class="constraint">NOT NULL</database>
 <!-- /TMPL_IF name="column_constraint_notnull" -->
 
 <!-- TMPL_IF name="column_default" -->
@@ -61,14 +65,12 @@
 
 <!-- TMPL_LOOP name="column_constraints" -->
 <!-- TMPL_IF name="column_fk" -->
-                <literal>REFERENCES</literal> <xref linkend="<!-- TMPL_VAR name="column_fk_sgmlid" -->"/>
+                <database class="constraint">REFERENCES <xref linkend="<!-- TMPL_VAR name="column_fk_sgmlid" -->"/></database>
 <!-- /TMPL_IF name="column_fk" -->
 <!-- /TMPL_LOOP name="column_constraints" -->
               </para>
 <!-- TMPL_IF name="column_comment" -->
-              <para>
-                <!-- TMPL_VAR name="column_comment_dbk" -->
-              </para>
+              <para><!-- TMPL_VAR name="column_comment_dbk" --></para>
 <!-- /TMPL_IF name="column_comment" -->
             </listitem>
           </varlistentry>
@@ -173,7 +175,7 @@
 <!-- TMPL_LOOP name="functions" -->
 <!-- Function <!-- TMPL_VAR NAME="function" --> -->
     <section id="<!-- TMPL_VAR NAME="function_sgmlid" -->"
-             xreflabel="<!-- TMPL_VAR NAME="schema_dbk" --><!-- TMPL_VAR NAME="function_dbk"-->">
+             xreflabel="<!-- TMPL_VAR NAME="function_short_dbk"-->()">
       <title id="<!-- TMPL_VAR NAME="function_sgmlid" -->-title">
        <!-- TMPL_VAR name="function_dbk" -->
       </title>

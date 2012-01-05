@@ -1,3 +1,39 @@
+2012-01-05 10:30  rbt
+
+	* postgresql_autodoc.pl: Mark 1.41 release
+
+2012-01-05 10:22  rbt
+
+	* xml.tmpl: Update schema for Docbook 4.5. Use <database/> where
+	  possible.
+
+2010-01-24 15:01  rbt
+
+	* postgresql_autodoc.pl: Apply a fix to the function signatures
+	  that was reversing argument names.
+
+	  Patch created by Jyrki Muukkonen and submitted via Peter
+	  Eisentraut
+
+2009-08-11 14:50  rbt
+
+	* Makefile: Add the manpage to the release tarball.
+
+2009-08-06 22:48  rbt
+
+	* Makefile, postgresql_autodoc.1.in: Add a manpage for PostgreSQL
+	  Autodoc (Tim Retout)
+
+	  It always installs at the moment (BSD Port won't like that).
+
+2009-06-13 07:06  rbt
+
+	* postgresql_autodoc.pl: Correct the synopsis (Peter Eisentraut)
+
+2009-04-30 22:31  rbt
+
+	* ChangeLog: Finally, a 1.40 release changelog.
+
 2009-04-30 22:31  rbt
 
 	* ChangeLog, Makefile: Seems tar on FreeBSD has changed behaviour

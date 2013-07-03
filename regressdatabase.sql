@@ -112,6 +112,14 @@ COMMENT ON FUNCTION product.worker(integer, integer) IS
 COMMENT ON FUNCTION warehouse.worker(integer, integer) IS
 'Worker function appropriate for warehouses.';
 
+create or replace function product.worker2 (i_1 integer, i_2 integer) returns integer as $$
+begin
+   return i_1 + i_2;
+end
+$$ language plpgsql;
+
+comment on function product.worker2 (i_1 integer, i_2 integer) 
+is 'worker function that uses named parameters';
 
 --
 -- Inheritance

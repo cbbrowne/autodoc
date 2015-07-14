@@ -38,6 +38,10 @@ Specify database password (default: blank)
 
 If no password is specified, one is prompted for.
 .TP
+.B \-w
+Use ~/.pgpass for authentication (overrides all other password options)
+.TP
+
 .B \-l <path>
 Path to the templates (default: @@TEMPLATE-DIR@@)
 .TP

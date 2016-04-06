@@ -152,6 +152,14 @@ sub main($) {
                 last;
             };
 
+	    # Read from .pgpass (override all other password options)
+	    /^-w$/ && do {
+		$dbpass = undef;
+		$dbuser = undef;
+                $needpass = 0;
+		last;
+	    };
+
             # Set the base of the filename. The extensions pulled
             # from the templates will be appended to this name
             /^-f$/ && do {

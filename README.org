@@ -42,5 +42,12 @@ you do some DSSSL/CSS work.
 
 ** AUTHOR
 
+Originally, this code base was derived from the [[http://pgfoundry.org/scm/?group_id=1000009][CVS repository on
+pgFoundry]], shifted to GitHub due to the popularity of maintenance via
+Git.  
+
+The presence of further contributions to the codebase seems to confirm
+that this was a decent idea.
+
 Rod Taylor <autodoc@rbt.ca>
 

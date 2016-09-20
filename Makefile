@@ -9,7 +9,7 @@ MANDIR = ${PREFIX}/share/man/man1
 
 
 # build configuration
-TEMPLATES = dia.tmpl dot.tmpl html.tmpl neato.tmpl xml.tmpl zigzag.dia.tmpl
+TEMPLATES = dia.tmpl dot.tmpl dot_shortfk.tmpl html.tmpl neato.tmpl xml.tmpl zigzag.dia.tmpl
 BINARY = postgresql_autodoc
 SOURCE = ${BINARY}.pl
 MANPAGE = ${BINARY}.1

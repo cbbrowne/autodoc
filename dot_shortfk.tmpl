@@ -15,5 +15,5 @@ edge [
 </TMPL_UNLESS name="view_definition"></TMPL_LOOP name="tables"></TMPL_LOOP name="schemas">
 
 <TMPL_LOOP name="fk_links">
-"<TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle0_schema">.</TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle0_name">":rtcol<TMPL_VAR name="handle0_connection"> -> "<TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle1_schema">.</TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle1_name">":ltcol<TMPL_VAR name="handle1_connection"> [label="fk"];</TMPL_LOOP name="fk_links">
+"<TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle0_schema">.</TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle0_name">":rtcol<TMPL_VAR name="handle0_connection"> -> "<TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle1_schema">.</TMPL_IF name="number_of_schemas"><TMPL_VAR name="handle1_name">":ltcol<TMPL_VAR name="handle1_connection"> [label=" "];</TMPL_LOOP name="fk_links">
 }

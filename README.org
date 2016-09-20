@@ -1,26 +1,24 @@
 * PostgreSQL Autodoc
 
 This is a utility which will run through PostgreSQL system tables and
-returns HTML, DOT, and 2 styles of XML which describes the database.
+returns HTML, DOT, and several styles of XML which describe the
+database.
 
-- The HTML is human readable (via webbrowser). 
-
-- The first style of XML it generates is the file format of Dia, a
-  diagramming tool.
-
-- The second type of XML is similar to HTML, but is in DocBook 4
-  format. It enables you to mix schema documentation with other
-  DocBook documentation via the XREFs, generating PDFs, HTML, RTF, or
-  other formatted documents. Between these tools and JavaDoc with the
-  appropriate XREFs.
+ - html :: The HTML is human readable (via webbrowser). 
+ - xml :: The second type of XML is similar to HTML, but is in DocBook
+          4 format. It enables you to mix schema documentation with
+          other DocBook documentation via the XREFs, generating PDFs,
+          HTML, RTF, or other formatted documents. Between these tools
+          and JavaDoc with the appropriate XREFs.
+ - neato :: This generates the schema in the form accepted by GraphViz
+            ~neato~, which draws the schema as an undirected graph
+ - dia :: This remaps the schema into XML using the XML schema of Dia,
+          an interactive diagramming tool.
+ - zigzag.dia :: This generates a diagram for Dia in another form
 
 As a result, documentation about a project can be generated quickly
-and be easily updatable yet have a very professional look with some
-DSSSL work.
-
-
-[Options](#OPTIONS)  
-[Author](#AUTHOR)  
+and be automatically updatable, yet have a quite professional look if
+you do some DSSSL/CSS work.
 
 ** Usage
 

@@ -24,7 +24,7 @@ This program requires the following perl modules:
 
 Install the following required perl modules:
 
-~$ sudo apt-get install libdbi-perl libhtml-templates-perl libterm-readkey-perl libdbd-pg-perl~
+~$ sudo apt-get install libdbi-perl libhtml-template-perl libterm-readkey-perl libdbd-pg-perl~
 
 Once you have installed the requirements, browse to the autodoc directory and run:
 
@@ -45,16 +45,21 @@ Once you have installed the requirements, browse to the autodoc directory and ru
  - ~−w~ :: Use ~/.pgpass for authentication (overrides all other password options)
  - ~−l~ :: <path> Path to the templates (default: @@TEMPLATE-DIR@@)
  - ~−t~ :: <output> Type of output wanted (default: All in template library)
-  + _html_ :: The HTML is human readable (via webbrowser). 
+  + _html_ :: The HTML is human readable (via web browser), representing
+         the entire schema within a single HTML document, and includes
+         referenceable labels for each object.
+  + _dia_ :: This remaps the schema into XML using the XML schema of
+             [[https://git.gnome.org/browse/dia/][Dia]], an interactive diagramming tool.  It does not do any
+             automated layout, so making the diagram usable would
+             require manual work, so this is often not terribly useful.
   + _xml_ :: The second type of XML is similar to HTML, but is in DocBook
          4 format. It enables you to mix schema documentation with
          other DocBook documentation via the XREFs, generating PDFs,
-          HTML, RTF, or other formatted documents. Between these tools
-          and JavaDoc with the appropriate XREFs.
+         HTML, RTF, or other formatted documents.  Object references
+         can be made between these tools and JavaDoc with use of 
+         appropriate XREFs (see ~xreflabel~ elements in the XML).
   + _neato_ :: This generates the schema in the form accepted by GraphViz
             ~neato~, which draws the schema as an undirected graph
-  + _dia_ :: This remaps the schema into XML using the XML schema of Dia,
-          an interactive diagramming tool.
   + _zigzag.dia_ :: This generates a diagram for Dia in another form
  - ~−s~ :: <schema> Specify a specific schema to match. Technically this is a regular expression but anything other than a specific name may have unusual results.
  - ~−m~ :: <regexp> Show only tables/objects with names matching the specified regular expression.

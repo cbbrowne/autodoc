@@ -12,7 +12,7 @@ you do some DSSSL/CSS work.
 
 This program requires the following perl modules:
 - DBI
-- HTML::Templates
+- HTML::Template
 - Term::ReadKey
 - DBD::Pg
 

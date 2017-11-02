@@ -65,6 +65,7 @@ Once you have installed the requirements, browse to the autodoc directory and ru
  - ~−m~ :: <regexp> Show only tables/objects with names matching the specified regular expression.
  - ~−−table=<args>~ :: Tables to export. Multiple tables may be provided using a comma-separated list, i.e. table,table2,table3.
  - ~−−statistics~ :: In 7.4 and later, with the contrib module pgstattuple installed we can gather statistics on the tables in the database (average size, free space, disk space used, dead tuple counts, etc.) This is disk intensive on large databases as all pages must be visited.
+ - ~--comment-filter=<program>~ :: Processes comments with a program. This is useful when comments are written using some markup languague (wiki/markdown), it allows conversion of structured text to desired output format. For each comment is executed command <program> <output> <tmp_file>, where <output> is the desired output format as specified by -t, <tmp_file> is path to file with original comment text. Processor should read this file, do processing and write result to standard output.
 
 ** AUTHOR
 

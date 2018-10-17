@@ -130,7 +130,7 @@
 <hr>
 <h1>Schema <!-- TMPL_VAR ESCAPE="HTML" name="schema" --></h1>
 <!-- TMPL_IF name="schema_comment" -->
-<p><!-- TMPL_VAR name="schema_comment" --></p>
+<p class="schema_comment"><!-- TMPL_VAR name="schema_comment" --></p>
 <!-- /TMPL_IF name="schema_comment" -->
 
 <!-- /TMPL_IF name="number_of_schemas" -->
@@ -141,11 +141,11 @@
   <a href="#<!-- TMPL_VAR ESCAPE="URL" name="schema_sgmlid" -->"><!-- TMPL_VAR ESCAPE="HTML" name="schema" --></a>.<!-- /TMPL_IF name="number_of_schemas" --><a name="<!-- TMPL_VAR ESCAPE="URL" name="table_sgmlid" -->"><!-- TMPL_VAR ESCAPE="HTML" name="table" --></a>
 </h2>
 <!-- TMPL_IF name="table_comment" -->
-<p><!-- TMPL_VAR ESCAPE="HTML" name="table_comment" --></p>
+<p class="table_comment"><!-- TMPL_VAR ESCAPE="HTML" name="table_comment" --></p>
 <!-- /TMPL_IF name="table_comment" -->
 
 
-<table width="100%" cellspacing="0" cellpadding="3">
+<table class="schema" width="100%" cellspacing="0" cellpadding="3">
   <caption><!-- TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="schema" -->.<!-- /TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="table" --> Structure</caption>
   <tr>
     <th>F-Key</th>
@@ -220,7 +220,7 @@
 <!-- Constraint List -->
 <!-- TMPL_IF name="constraints" -->
 <p>&nbsp;</p>
-<table width="100%" cellspacing="0" cellpadding="3">
+<table class="constraints" width="100%" cellspacing="0" cellpadding="3">
   <caption><!-- TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="schema" -->.<!-- /TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="table" --> Constraints</caption>
   <tr>
     <th>Name</th>
@@ -237,19 +237,21 @@
 
 <!-- Foreign Key Discovery -->
 <!-- TMPL_IF name="fk_schemas" -->
-<p>Tables referencing this one via Foreign Key Constraints:</p>
-<!-- TMPL_LOOP name="fk_schemas" -->
-<ul>
-  <li><a href="#<!-- TMPL_VAR ESCAPE="URL" name="fk_sgmlid" -->"><!-- TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="fk_schema" -->.<!-- /TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="fk_table" --></a></li>
-</ul>
-<!-- /TMPL_LOOP name="fk_schemas" -->
+<div class="fk_schemas">
+  <p>Tables referencing this one via Foreign Key Constraints:</p>
+  <!-- TMPL_LOOP name="fk_schemas" -->
+  <ul>
+    <li><a href="#<!-- TMPL_VAR ESCAPE="URL" name="fk_sgmlid" -->"><!-- TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="fk_schema" -->.<!-- /TMPL_IF name="number_of_schemas" --><!-- TMPL_VAR ESCAPE="HTML" name="fk_table" --></a></li>
+  </ul>
+  <!-- /TMPL_LOOP name="fk_schemas" -->
+</div>
 <!-- /TMPL_IF name="fk_schemas" -->
-
+<ul class="indexes">
 <!-- Indexes -->
 <!-- TMPL_LOOP name="indexes" -->
-<!-- TMPL_VAR name="index_name" --> <!-- TMPL_VAR name="index_definition" -->
+  <li><b><!-- TMPL_VAR name="index_name" --></b> <!-- TMPL_VAR name="index_definition" --></li>
 <!-- /TMPL_LOOP name="indexes" -->
-
+</ul>
 <!-- View Definition -->
 <!-- TMPL_IF name="view_definition" -->
 <pre><!-- TMPL_VAR ESCAPE="HTML" name="view_definition" --></pre>

@@ -4,3 +4,4 @@ postgresql_autodoc
 config.status
 config.mk
 config.log
+env

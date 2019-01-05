@@ -30,6 +30,30 @@ Once you have installed the requirements, browse to the autodoc directory and ru
 
 ~$ sudo make install~
 
+*** Docker
+
+Install [Docker](https://www.docker.com/)
+
+Create a Docker Image:
+
+~$ docker build . -t autodoc~
+
+Running Docker:
+
+Create an env file by copying the example file and filling in details:
+
+~$ cp env-example env~
+
+Run a Docker container (with default command in Dockerfile):
+
+~$ docker run --mount src=`pwd`,target=/app,type=bind --network=host --env-file ./env -v $pwd:/app autodoc~
+
+Note: --network=host is for accessing a database on localhost
+
+Run a custom container (see Usage below; if you want the files to appear in current directory, use the `--mount` arg above):
+
+~$ docker run autodoc postgresql_autodoc [options]~
+
 ** Usage
 
   ~postgresql_autodoc [options]~

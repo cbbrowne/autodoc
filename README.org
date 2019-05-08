@@ -22,11 +22,17 @@ This program requires the following perl modules:
 
 (Debian should be similar/identical)
 
-Install the following required perl modules:
+**** from the universe repository
 
-~$ sudo apt-get install libdbi-perl libhtml-template-perl libterm-readkey-perl libdbd-pg-perl~
+~$ sudo apt install postgresql-autodoc~
 
-Once you have installed the requirements, browse to the autodoc directory and run:
+**** from github
+
+~$ sudo apt install libdbi-perl libhtml-template-perl libterm-readkey-perl libdbd-pg-perl~
+
+~$ git clone https://github.com/cbbrowne/autodoc.git~
+
+~$ cd autodoc~
 
 ~$ sudo make install~
 

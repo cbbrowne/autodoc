@@ -391,7 +391,7 @@ sub info_collect {
                                   AND relkind = 'S') THEN
                 NULL
               ELSE
-                adsrc
+                pg_get_expr(adbin, adrelid)
               END as column_default
             , pg_catalog.col_description(attrelid, attnum) as column_description
             , attnum

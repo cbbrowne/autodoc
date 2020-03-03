@@ -1,0 +1,5 @@
+# Copy, rename to env, and fill in your db details
+DATABASE=app
+HOST=localhost
+USER=app
+PASSWORD=password

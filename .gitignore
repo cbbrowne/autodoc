@@ -1,7 +1,9 @@
 .*.swp
+*~
 ChangeLog.bak
 postgresql_autodoc
 config.status
 config.mk
 config.log
 env
+postgresql_autodoc.1

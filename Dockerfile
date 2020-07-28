@@ -18,10 +18,12 @@ RUN make install
 
 ENV DATABASE=app \
   HOST=localhost \
+  PORT=port \
   USER=app \
   PASSWORD=password
 
 CMD postgresql_autodoc -d ${DATABASE} \
   -h ${HOST} \
+  -p ${PORT} \
   -u ${USER} \
   --password=${PASSWORD}

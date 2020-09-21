@@ -58,6 +58,9 @@ use HTML::Template;
 # Allow reading a password from stdin
 use Term::ReadKey;
 
+# Used for storing comments when external processor is used
+use File::Temp qw{ tempfile };
+
 sub main($) {
     my ($ARGV) = @_;
 
@@ -98,6 +101,8 @@ sub main($) {
     my $wanted_output = undef;    # means all types
 
     my $statistics = 0;
+
+    my $filter_prog;
 
     # Fetch base and dirnames.  Useful for Usage()
     my $basename = $0;
@@ -214,6 +219,14 @@ sub main($) {
                 last;
             };
 
+            /^--comment-filter=/ && do {
+                my $some_filter_prog = $ARGV[$i];
+                $some_filter_prog =~ s/^--comment-filter=//g;
+                $filter_prog = $some_filter_prog;
+
+                last;
+            };
+
             # Help is wanted, redirect user to usage()
             /^-\?$/    && do { usage( $basename, $database, $dbuser ); last; };
             /^--help$/ && do { usage( $basename, $database, $dbuser ); last; };
@@ -253,7 +266,7 @@ Msg
 
     # Write out *ALL* templates
     write_using_templates( \%db, $database, $statistics, $template_path,
-        $output_filename_base, $wanted_output );
+        $output_filename_base, $wanted_output, $filter_prog );
 }
 
 ##
@@ -975,9 +988,9 @@ sub info_collect {
 # Generate structure that HTML::Template requires out of the
 # $struct for table related information, and $struct for
 # the schema and function information
-sub write_using_templates($$$$$) {
+sub write_using_templates($$$$$$) {
     my ( $db, $database, $statistics, $template_path, $output_filename_base,
-        $wanted_output )
+        $wanted_output, $filter_prog )
       = @_;
     my $struct = $db->{$database}{'STRUCT'};
 
@@ -1108,9 +1121,11 @@ sub write_using_templates($$$$$) {
                     column_default_short     => $shortdefault,
                     column_default_short_dbk => docbook($shortdefault),
 
-                    column_comment =>
-                      $struct->{$schema}{'TABLE'}{$table}{'COLUMN'}{$column}
-                      {'DESCRIPTION'},
+                    column_comment => filter_comment(
+                        $filter_prog, $wanted_output,
+                        $struct->{$schema}{'TABLE'}{$table}{'COLUMN'}{$column}
+                        {'DESCRIPTION'}
+                    ),
                     column_comment_dbk => docbook(
                         $struct->{$schema}{'TABLE'}{$table}{'COLUMN'}{$column}
                           {'DESCRIPTION'}
@@ -1390,8 +1405,10 @@ sub write_using_templates($$$$$) {
                         $schema, $struct->{$schema}{'TABLE'}{$table}{'TYPE'},
                         $table )
                 ),
-                table_comment =>
-                  $struct->{$schema}{'TABLE'}{$table}{'DESCRIPTION'},
+                table_comment => filter_comment(
+                    $filter_prog, $wanted_output,
+                    $struct->{$schema}{'TABLE'}{$table}{'DESCRIPTION'}
+                ),
                 table_comment_dbk =>
                   docbook( $struct->{$schema}{'TABLE'}{$table}{'DESCRIPTION'} ),
                 table_comment_dia   => $comment_dia,
@@ -1420,8 +1437,10 @@ sub write_using_templates($$$$$) {
                 function_dbk => docbook($function),
                 function_sgmlid =>
                   sgml_safe_id( join( '.', $schema, 'function', $function ) ),
-                function_comment =>
-                  $struct->{$schema}{'FUNCTION'}{$function}{'COMMENT'},
+                function_comment => filter_comment(
+                    $filter_prog, $wanted_output,
+                    $struct->{$schema}{'FUNCTION'}{$function}{'COMMENT'}
+                ),
                 function_comment_dbk => docbook(
                     $struct->{$schema}{'FUNCTION'}{$function}{'COMMENT'}
                 ),
@@ -1449,7 +1468,10 @@ sub write_using_templates($$$$$) {
             schema_dbk     => docbook($schema),
             schema_dot     => graphviz($schema),
             schema_sgmlid  => sgml_safe_id( $schema . ".schema" ),
-            schema_comment => $struct->{$schema}{'SCHEMA'}{'COMMENT'},
+            schema_comment => filter_comment(
+                $filter_prog, $wanted_output,
+                $struct->{$schema}{'SCHEMA'}{'COMMENT'}
+            ),
             schema_comment_dbk =>
               docbook( $struct->{$schema}{'SCHEMA'}{'COMMENT'} ),
             functions => \@functions,
@@ -1611,7 +1633,8 @@ sub write_using_templates($$$$$) {
             database             => $database,
             database_dbk         => docbook($database),
             database_sgmlid      => sgml_safe_id($database),
-            database_comment     => $database_comment,
+            database_comment     => filter_comment(
+                $filter_prog, $wanted_output, $database_comment),
             database_comment_dbk => docbook($database_comment),
             dumped_on            => $dumped_on,
             dumped_on_dbk        => docbook($dumped_on),
@@ -1832,6 +1855,21 @@ sub triggerError($) {
     exit 2;
 }
 
+sub filter_comment($$$) {
+    my ($filter_prog, $wanted_output, $comment) = @_;
+
+    if ($filter_prog) {
+        if ($comment) {
+            my ($tmp, $fn) = tempfile(UNLINK => 1);
+            print($tmp $comment);
+            $tmp->flush;
+            $comment = `$filter_prog $wanted_output $fn`;
+        }
+    }
+
+    return $comment;
+}
+
 #####
 # usage
 sub usage($$$) {
@@ -1865,6 +1903,16 @@ Options:
                   can gather statistics on the tables in the database 
                   (average size, free space, disk space used, dead tuple counts, etc.)
                   This is disk intensive on large databases as all pages must be visited.
+
+  --comment-filter=<program>
+                   Processes comments with a program. This is useful when comments
+                   are written using some markup languague (wiki/markdown), it
+                   allows conversion of structured text to desired output format.
+                   For each comment is executed command <program> <output> <tmp_file>,
+                   where <output> is the desired output format as specified by -t,
+                   <tmp_file> is path to file with original comment text. Processor
+                   should read this file, do processing and write result to
+                   standard output.
 USAGE
       ;
     exit 1;
